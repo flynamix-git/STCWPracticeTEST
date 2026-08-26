@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST Practice Quiz — Personal Survival Techniques</title>
+<style>
+  :root{
+    --navy:#0B2A45;
+    --navy-deep:#071B30;
+    --plate:#F1ECDD;
+    --plate-line:#C9BFA0;
+    --orange:#E2541F;
+    --orange-deep:#B8400F;
+    --steel:#4A6C8C;
+    --good:#1F7A54;
+    --bad:#B4322A;
+    --ink:#182430;
+    --paper:#FAF7EF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(74,108,140,0.18), transparent 45%),
+      var(--navy-deep);
+    color:var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", Arial, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:760px;
+  }
+
+  /* ---------- Header: stenciled lifeboat capacity plate ---------- */
+  .plate{
+    background: var(--plate);
+    border:3px solid var(--navy);
+    border-radius:6px;
+    padding:22px 24px 18px;
+    position:relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    margin-bottom:22px;
+  }
+  .plate::before{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border:1px dashed var(--plate-line);
+    border-radius:3px;
+    pointer-events:none;
+  }
+  .plate-eyebrow{
+    font-family: "Oswald", "Arial Narrow", sans-serif;
+    letter-spacing:0.22em;
+    font-size:12px;
+    color:var(--steel);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  .plate-title{
+    font-family: "Oswald", "Arial Narrow", sans-serif;
+    font-weight:600;
+    font-size:clamp(26px,5vw,36px);
+    letter-spacing:0.03em;
+    color:var(--navy);
+    text-transform:uppercase;
+    margin:0;
+    line-height:1.05;
+  }
+  .plate-sub{
+    margin:8px 0 0;
+    font-size:13px;
+    color:var(--ink);
+    opacity:0.75;
+  }
+  .plate-stencil-row{
+    display:flex;
+    gap:18px;
+    margin-top:14px;
+    flex-wrap:wrap;
+    font-family: "Oswald","Arial Narrow",sans-serif;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--steel);
+  }
+  .plate-stencil-row span b{ color:var(--navy); }
+
+  /* ---------- Cards / surfaces ---------- */
+  .card{
+    background:var(--paper);
+    border-radius:6px;
+    padding:26px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+  }
+
+  /* ---------- Mode select screen ---------- */
+  .mode-grid{
+    display:grid;
+    gap:14px;
+  }
+  .mode-btn{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    width:100%;
+    text-align:left;
+    background:#fff;
+    border:2px solid #E4DEC9;
+    border-radius:8px;
+    padding:16px 18px;
+    cursor:pointer;
+    transition:border-color .15s ease, transform .1s ease;
+    font-family:inherit;
+  }
+  .mode-btn:hover{ border-color:var(--orange); transform:translateY(-1px); }
+  .mode-btn:focus-visible{ outline:3px solid var(--orange); outline-offset:2px; }
+  .mode-name{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:18px;
+    letter-spacing:0.02em;
+    color:var(--navy);
+    text-transform:uppercase;
+    margin:0 0 4px;
+  }
+  .mode-desc{ margin:0; font-size:13.5px; color:#555; }
+  .mode-count{
+    flex-shrink:0;
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:26px;
+    color:var(--orange);
+    border:2px solid var(--orange);
+    border-radius:50%;
+    width:56px; height:56px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .bank-note{
+    margin-top:16px;
+    font-size:12.5px;
+    color:#7c7460;
+    text-align:center;
+  }
+
+  /* ---------- Quiz screen ---------- */
+  .progress-wrap{
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:18px;
+  }
+  .progress-track{
+    flex:1; height:10px; background:#E4DEC9; border-radius:6px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; background:linear-gradient(90deg,var(--steel),var(--orange));
+    width:0%; transition:width .25s ease;
+  }
+  .progress-label{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:13px; color:var(--navy); white-space:nowrap;
+  }
+  .q-text{
+    font-size:18px;
+    line-height:1.4;
+    color:var(--ink);
+    margin:0 0 20px;
+    font-weight:600;
+  }
+  .opt-list{ display:grid; gap:10px; margin-bottom:6px; }
+  .opt-btn{
+    display:flex; align-items:flex-start; gap:12px;
+    text-align:left;
+    background:#fff;
+    border:2px solid #E4DEC9;
+    border-radius:8px;
+    padding:13px 15px;
+    font-size:14.5px;
+    line-height:1.4;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--ink);
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .opt-btn:hover:not(:disabled){ border-color:var(--steel); }
+  .opt-btn:focus-visible{ outline:3px solid var(--orange); outline-offset:1px; }
+  .opt-letter{
+    flex-shrink:0;
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:13px;
+    width:24px;height:24px;border-radius:50%;
+    border:2px solid #C9BFA0;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--steel);
+  }
+  .opt-btn.correct{ border-color:var(--good); background:#EAF6EF; }
+  .opt-btn.correct .opt-letter{ border-color:var(--good); background:var(--good); color:#fff; }
+  .opt-btn.incorrect{ border-color:var(--bad); background:#FBEBEA; }
+  .opt-btn.incorrect .opt-letter{ border-color:var(--bad); background:var(--bad); color:#fff; }
+  .opt-btn:disabled{ cursor:default; }
+  .opt-btn.dim{ opacity:0.55; }
+
+  .explain{
+    display:none;
+    margin-top:16px;
+    padding:14px 16px;
+    border-left:4px solid var(--steel);
+    background:#EEF2F6;
+    border-radius:4px;
+    font-size:14px;
+    line-height:1.5;
+  }
+  .explain.show{ display:block; }
+  .explain b{ color:var(--navy); }
+
+  .nav-row{
+    display:flex; justify-content:flex-end; margin-top:20px;
+  }
+  .btn-primary{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    padding:12px 26px;
+    font-size:14px;
+    cursor:pointer;
+    transition:background .12s ease;
+  }
+  .btn-primary:hover{ background:var(--orange-deep); }
+  .btn-primary:disabled{ background:#D8CFB8; cursor:not-allowed; }
+  .btn-secondary{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    background:transparent;
+    color:var(--navy);
+    border:2px solid var(--navy);
+    border-radius:6px;
+    padding:10px 22px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .btn-secondary:hover{ background:var(--navy); color:#fff; }
+
+  /* ---------- Results screen ---------- */
+  .score-hero{
+    text-align:center;
+    padding:10px 0 22px;
+    border-bottom:1px dashed var(--plate-line);
+    margin-bottom:20px;
+  }
+  .score-num{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:64px;
+    color:var(--navy);
+    line-height:1;
+    margin:0;
+  }
+  .score-num span{ font-size:28px; color:var(--steel); }
+  .score-msg{ margin:8px 0 0; font-size:14px; color:#555; }
+  .review-item{
+    padding:14px 0;
+    border-bottom:1px solid #EDE7D6;
+  }
+  .review-item:last-child{ border-bottom:none; }
+  .review-q{ font-weight:600; font-size:14.5px; margin:0 0 6px; }
+  .review-tag{
+    display:inline-block;
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:10.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border-radius:3px;
+    margin-bottom:6px;
+  }
+  .tag-correct{ background:#EAF6EF; color:var(--good); }
+  .tag-wrong{ background:#FBEBEA; color:var(--bad); }
+  .review-answer{ font-size:13.5px; color:#444; margin:2px 0; }
+  .review-exp{ font-size:13px; color:#666; margin-top:4px; }
+  .results-actions{
+    display:flex; gap:10px; justify-content:center; margin-top:24px; flex-wrap:wrap;
+  }
+  .hidden{ display:none !important; }
+
+  footer.credit{
+    text-align:center; color:#6b7f95; font-size:11.5px; margin-top:18px; letter-spacing:0.02em;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="plate">
+    <p class="plate-eyebrow">STCW Basic Safety Training</p>
+    <h1 class="plate-title">Personal Survival Techniques</h1>
+    <p class="plate-sub">Derived from the course Student Guide.</p>
+    <div class="plate-stencil-row">
+      <span>Bank size <b id="bankSizeLabel">--</b> questions</span>
+      <span>Format <b>Multiple choice</b></span>
+      <span>Scored <b>Instant feedback</b></span>
+    </div>
+  </div>
+
+  <!-- MODE SELECT -->
+  <div id="screen-select" class="card">
+    <div class="mode-grid">
+      <button class="mode-btn" data-count="10">
+        <div>
+          <p class="mode-name">Quick Drill</p>
+          <p class="mode-desc">10 random questions pulled fresh from the full bank. Good for a five-minute warm-up between watches.</p>
+        </div>
+        <div class="mode-count">10</div>
+      </button>
+      <button class="mode-btn" data-count="50">
+        <div>
+          <p class="mode-name">Half Deck</p>
+          <p class="mode-desc">50 random questions, reshuffled each run. A solid pre-exam review without covering everything.</p>
+        </div>
+        <div class="mode-count">50</div>
+      </button>
+      <button class="mode-btn" data-count="all">
+        <div>
+          <p class="mode-name">Full Muster</p>
+          <p class="mode-desc">Every question in the bank, shuffled. Use this the night before the exam.</p>
+        </div>
+        <div class="mode-count" id="allCountBtn">--</div>
+      </button>
+    </div>
+    <p class="bank-note">Each run randomly selects and reorders questions — no two attempts are the same.</p>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="card hidden">
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">1 / 10</div>
+    </div>
+    <p class="q-text" id="qText"></p>
+    <div class="opt-list" id="optList"></div>
+    <div class="explain" id="explainBox"></div>
+    <div class="nav-row">
+      <button class="btn-primary" id="nextBtn" disabled>Next</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="screen-results" class="card hidden">
+    <div class="score-hero">
+      <p class="score-num" id="scoreNum">0<span>/0</span></p>
+      <p class="score-msg" id="scoreMsg"></p>
+    </div>
+    <div id="reviewList"></div>
+    <div class="results-actions">
+      <button class="btn-secondary" id="retakeBtn">Run again (new shuffle)</button>
+      <button class="btn-primary" id="menuBtn">Back to menu</button>
+    </div>
+  </div>
+
+  <footer class="credit">For study purposes only — always defer to your instructor and official course materials.</footer>
+</div>
+
+<script>
+const QUESTIONS = [{"q": "Which of the following is NOT listed in the guide as a hazardous shipboard situation?", "options": ["Collision with land or another ship", "Shifting of cargo", "Piracy boarding drill", "Man Overboard"], "correct": 2, "exp": "The guide lists collision, stranding, hazmat spills/explosions, cargo shifting, explosions/fire, and man overboard. 'Piracy boarding drill' is not one of the listed emergency situations."}, {"q": "What is the document called that shows every crew member's emergency role and station?", "options": ["Station Bill (Muster List)", "Cargo Manifest", "Safety Data Sheet", "Voyage Plan"], "correct": 0, "exp": "The guide states every vessel SHALL have a document called a Station Bill, also known as a Muster List."}, {"q": "What is the whistle/alarm signal pattern for Abandon Ship, per the guide?", "options": ["Continuous ringing of the general alarm only", "Short blasts followed by one prolonged blast of the ship's whistle", "Three prolonged blasts repeated four times", "Two short blasts repeated twice"], "correct": 1, "exp": "The guide describes the Abandon Ship signal as a number of Short Blasts followed by one Prolonged Blast of the ship's whistle."}, {"q": "What is the whistle signal pattern for Man Overboard, per the guide?", "options": ["Continuous ringing of the general alarm", "Short blasts followed by one prolonged blast", "Three prolonged blasts on the ship's whistle, repeated four times", "One long blast lasting a full minute"], "correct": 2, "exp": "The guide states the Man Overboard signal is THREE Prolonged Blasts on the ship's whistle, repeated FOUR times."}, {"q": "According to the guide's example, the Master holds Muster Number 1. Where does the Master report during a fire, and where during Abandon Ship?", "options": ["Fire: Bridge (in command of firefighting). Abandon Ship: 3rd Liferaft (in charge of it)", "Fire and Abandon Ship: always the Bridge", "Fire: 3rd Liferaft. Abandon Ship: Bridge", "The Master has no assigned station"], "correct": 0, "exp": "The guide's example states the Master reports to the Bridge during a fire (in command of firefighting) and to the 3rd Liferaft during Abandon Ship, in charge of that raft."}, {"q": "Per the guide, why is fire considered the most hazardous shipboard emergency?", "options": ["Because it is the least common emergency", "Because, left unchecked, it can consume the entire crew and vessel very quickly", "Because it only affects cargo, not crew", "Because it cannot be fought at sea"], "correct": 1, "exp": "The guide states fire is the most hazardous emergency because, if left unchecked, it can consume the entire crew and vessel very quickly."}, {"q": "The guide compares the ship itself to what, when explaining why fire is prioritized above other emergencies?", "options": ["A disposable asset", "Your own 'island' in the middle of the ocean / your largest lifeboat", "A temporary shelter only", "An unnecessary risk"], "correct": 1, "exp": "The guide states the ship is the safest place to be, like your own 'island' in the ocean, and that losing the ship means losing your largest lifeboat."}, {"q": "How often does the guide say emergency drills are typically conducted aboard ship?", "options": ["Only once per voyage", "At least every month, and typically every week", "Once per year", "Only after an incident occurs"], "correct": 1, "exp": "The guide states drills will be conducted at least every month, and typically every week."}, {"q": "When does a crew member first learn their 'muster number' and station assignment, per the guide?", "options": ["Only during an actual emergency", "When first coming aboard the vessel", "Only after their first drill", "It is assigned by the USCG before boarding"], "correct": 1, "exp": "The guide states that when first coming aboard, every crew member is assigned a muster number and shown the Station Bill."}, {"q": "What does a crew member's muster number tell them, according to the guide?", "options": ["Their pay grade only", "Where to go and what to do for each of the three basic emergency types", "Their cabin assignment", "Their seniority on the ship"], "correct": 1, "exp": "The guide states the muster number tells a crew member where they should go and what they should do for all three basic types of emergencies."}, {"q": "What historic event does the guide credit with leading to the creation of the SOLAS Convention?", "options": ["The sinking of the Titanic in 1912", "World War II", "The Exxon Valdez spill", "The founding of the IMO"], "correct": 0, "exp": "The guide states the sinking of the Titanic in 1912 led to the creation of the Safety of Life at Sea (SOLAS) Conventions."}, {"q": "According to the guide, how does the liferaft capacity aboard a large cargo ship typically compare to its lifeboat capacity?", "options": ["Liferafts have double the lifeboat capacity", "Liferafts have the same total capacity as the lifeboats, as a backup", "Liferafts only carry half as many people as lifeboats", "Ships are not required to carry liferafts if they have lifeboats"], "correct": 1, "exp": "The guide states vessels will have the same amount of capacity in inflatable liferafts as a backup to the lifeboats, in case the lifeboats cannot be boarded."}, {"q": "Which of these is NOT one of the three types of lifeboats listed in the guide?", "options": ["Partially Enclosed/Open-Top Lifeboats", "Partially Enclosed Self-Righting Lifeboats", "Fully Enclosed Self-Righting Lifeboats", "Rigid Hull Inflatable Lifeboats"], "correct": 3, "exp": "The guide lists three lifeboat types: Partially Enclosed/Open-Top, Partially Enclosed Self-Righting, and Fully Enclosed Self-Righting. 'Rigid Hull Inflatable' is not one of them (that describes a rescue boat style, not a listed lifeboat type)."}, {"q": "Why does the guide say Partially Enclosed/Open-Top Lifeboats are falling out of favor?", "options": ["They are too expensive to maintain", "They offer limited crew protection, unsafe launching, and capsize easily", "They cannot carry enough fuel", "They are no longer legal on any vessel"], "correct": 1, "exp": "The guide states these lifeboats are falling out of favor due to limited protection, unsafe launching, and how easily they capsize."}, {"q": "Where does the guide say Partially-Enclosed Self-Righting Lifeboats are typically found, and why might this surprise someone going by the name alone?", "options": ["Sub-arctic areas, because of their sealed hulls", "Warmer climates on cruise ships, since their sides roll up for airflow", "Only cargo ships carrying hazardous materials", "They are never used commercially"], "correct": 1, "exp": "The guide states these are typically found in warmer climates on cruise ships, with sides that roll up for airflow \u2014 the opposite of what 'enclosed' might suggest."}, {"q": "What percentage of a Partially-Enclosed Self-Righting Lifeboat must be protected, per the guide?", "options": ["At least 20%", "At least 50%", "At least 80%", "100%, it must be fully sealed"], "correct": 0, "exp": "The guide states at least 20% of the boat must be protected."}, {"q": "What is the maximum capacity of a Fully-Enclosed Self-Righting Lifeboat, per the guide?", "options": ["25 persons", "100 persons", "150 persons", "200 persons"], "correct": 2, "exp": "The guide states the max capacity of a Fully-Enclosed Self-Righting Lifeboat is 150 persons."}, {"q": "Within how many minutes must a lifeboat be fully boarded by the ship's full complement of crew, per the guide?", "options": ["1 minute", "3 minutes", "10 minutes", "30 minutes"], "correct": 1, "exp": "The guide states lifeboats must be able to be fully boarded within three minutes of the ship's full complement of crew."}, {"q": "Which of the following is NOT information the guide says must be stenciled on a lifeboat?", "options": ["Passenger capacity", "Port of registry", "The captain's personal name", "Dimensions and lightweight tonnage"], "correct": 2, "exp": "The guide lists passenger capacity, port of registry, vessel name, and dimensions/lightweight tonnage. The captain's personal name is not one of the required stencils."}, {"q": "Based on the guide's stated fuel endurance (24 hours) and minimum speed (6 knots), how far could a lifeboat theoretically travel?", "options": ["24 nautical miles", "72 nautical miles", "144 nautical miles", "6 nautical miles"], "correct": 2, "exp": "24 hours x 6 knots = 144 nautical miles, exactly as the guide calculates."}, {"q": "What allows a self-righting lifeboat to actually flip back upright if capsized, and what condition does the guide attach to this?", "options": ["A counter-weight at the keel \u2014 but only works if all passengers are securely strapped into their safety belts", "An external tugboat must right it manually", "It rights itself automatically with no conditions", "Self-righting lifeboats cannot capsize in the first place"], "correct": 0, "exp": "The guide explains a counter-weight at the keel rolls the lifeboat right-side up, but only if passengers are securely strapped in \u2014 if they fall toward the bottom, the boat stays capsized."}, {"q": "What does the guide say about when rescue boats should be operated?", "options": ["Any time crew members want practice", "Only during monthly drills and in actual emergencies", "Continuously while underway", "Only by the Master"], "correct": 1, "exp": "The guide states rescue boats should only be operated during monthly drills and in emergencies."}, {"q": "Which davit type does the guide describe as needing only one person to operate, using cradles and rollers?", "options": ["Gravity Davits", "Sheath-Screw Davits", "Miranda Davits", "Radial Davits"], "correct": 0, "exp": "The guide states Gravity Davits are the most common launching method and need only one person to operate."}, {"q": "Which davit type does the guide describe as pushing outward and allowing the lifeboat to dangle alongside the ship?", "options": ["Gravity Davits", "Sheath-Screw Davits", "Miranda Davits", "Radial Davits"], "correct": 1, "exp": "The guide describes the Sheath-Screw Davit as simply pushing outward, allowing the lifeboat to dangle alongside the ship to board."}, {"q": "Which davit type does the guide describe as allowing the lifeboat to slide down a ramp?", "options": ["Gravity Davits", "Sheath-Screw Davits", "Miranda Davits", "Radial Davits"], "correct": 2, "exp": "The guide describes the Miranda Davit as allowing the lifeboat to slide down a ramp."}, {"q": "Which davit type does the guide describe as swinging the lifeboat in a semi-circle while holding it with 'sea painters'?", "options": ["Gravity Davits", "Sheath-Screw Davits", "Miranda Davits", "Radial Davits"], "correct": 3, "exp": "The guide describes the Radial Davit as lifting the lifeboat out of its cradle and swinging it in a semi-circle, held in place with ropes called 'sea painters'."}, {"q": "The survival equipment packs carried in lifeboats and liferafts are separated into which two classes, per the guide?", "options": ["SOLAS A and SOLAS B", "Type I and Type II", "Class A and Class C", "GMDSS A and GMDSS B"], "correct": 0, "exp": "The guide states survival equipment packs are separated into SOLAS-A and SOLAS-B packs."}, {"q": "Per the guide, how much food and water is included in a SOLAS A pack for each person of rated capacity?", "options": ["One pound of food, 1\u00bd quarts of water", "Two pounds of food, one gallon of water", "No food, half a quart of water", "Five pounds of food, two gallons of water"], "correct": 0, "exp": "The guide states SOLAS A packs contain one pound of food and 1\u00bd quarts of water for each person of the rated capacity."}, {"q": "Which of the following IS included in a SOLAS A survival pack, per the guide?", "options": ["A fishing kit", "A GPS chartplotter", "A satellite phone", "A change of dry clothing for every person"], "correct": 0, "exp": "The guide lists a fishing kit among the SOLAS A pack contents, along with items like a first aid kit, flares, dye markers, a signal mirror, paddles, a hand pump, and a repair kit."}, {"q": "How many handheld red flares does the guide say a SOLAS A pack contains?", "options": ["Six", "Two", "Ten", "None \u2014 only parachute flares are included"], "correct": 0, "exp": "The guide states SOLAS A packs contain six handheld red flares (plus two handheld red parachute flares)."}, {"q": "What is actually different about a SOLAS B pack compared to a SOLAS A pack, per the guide?", "options": ["It is simply a smaller container with identical contents", "No food, no water, no fishing kit, and half the number of flares/smoke signals", "It has more flares but no first aid kit", "SOLAS B packs do not exist"], "correct": 1, "exp": "The guide specifies SOLAS B packs contain everything in Pack A except food, water, the fishing kit, and half the flares/smoke signals."}, {"q": "What advantage does the guide give for liferafts over lifeboats regarding impacts?", "options": ["Liferafts can strike hard objects like the side of a ship without damage", "Liferafts are heavier and more resistant to sinking", "Liferafts have reinforced steel hulls", "Liferafts cannot be damaged by fire"], "correct": 0, "exp": "The guide lists being able to strike hard objects (like the side of a ship) without damage as one of a liferaft's advantages, along with taking up less space and providing insulation."}, {"q": "How is an inflatable liferaft typically stored aboard a vessel, per the guide?", "options": ["Like a plastic barrel tied down horizontally to a cradle frame", "Hanging vertically from davits at all times", "Loose on the deck with no fastening", "Submerged in a below-deck tank"], "correct": 0, "exp": "The guide describes a stored liferaft as looking like a plastic barrel tied down horizontally to a cradle frame."}, {"q": "What component of a liferaft's stowage keeps the raft and its contents inside the container until use?", "options": ["The Packing Bands", "The Cleat", "The Weak Link", "The Gasket"], "correct": 0, "exp": "The guide states the Packing Bands keep the liferaft and its contents inside the container until its use."}, {"q": "What component keeps the liferaft container secured within its cradle?", "options": ["The Gasket", "The Tiedown Straps", "The Operating Cord", "The Weak Link"], "correct": 1, "exp": "The guide states the Tiedown Straps keep the liferaft in the Cradle."}, {"q": "What is the purpose of the Gasket on a liferaft container, per the guide?", "options": ["To prevent moisture from getting inside the container", "To provide extra buoyancy", "To attach the operating cord", "To act as a handhold for survivors"], "correct": 0, "exp": "The guide states the Gasket prevents moisture from getting inside the Container."}, {"q": "What is another name for the liferaft's Operating Cord, per the guide?", "options": ["The Sea Painter", "The Weak Link", "The Cleat", "The Righting Strap"], "correct": 0, "exp": "The guide states the Operating Cord is also known as the Sea Painter."}, {"q": "What must be done to the Operating Cord to trip the CO2 cylinder and inflate the liferaft?", "options": ["It must be pulled all the way out", "It must be cut in half", "It must be soaked in seawater", "It must be left slack"], "correct": 0, "exp": "The guide states the Operating Cord must be pulled all the way out to trip the CO2 cylinder inside and inflate the liferaft."}, {"q": "What is the common nickname the guide gives for the Hydrostatic Release Unit (HRU)?", "options": ["The 'hockey puck'", "The 'trigger box'", "The 'red button'", "The 'life switch'"], "correct": 0, "exp": "The guide states the HRU is more commonly referred to as the 'hockey puck.'"}, {"q": "What does the Hydrostatic Release Unit (HRU) actually do, per the guide?", "options": ["Releases the Tiedown Straps from the Cradle by cutting a nylon strap", "Inflates the raft with compressed air directly", "Activates the strobe light", "Deploys the sea anchor manually"], "correct": 0, "exp": "The guide states the HRU releases the Tiedown Straps from the Cradle by cutting the nylon strap within it."}, {"q": "What is the Cleat used for on a liferaft's stowage, per the guide?", "options": ["A permanent fastening fixture for lines, where the operating cord should be tied before throwing the raft overboard", "A cutting tool to release the weak link", "A hand pump attachment point", "A location to store spare flares"], "correct": 0, "exp": "The guide states the Cleat is a permanent fastening fixture for lines, and the Operating Cord should be tied to it before the liferaft is thrown overboard."}, {"q": "What is the purpose of the liferaft's 'Weak Link,' per the guide?", "options": ["It allows the operating cord to separate from the ship if the vessel sinks, so the raft can inflate on its own", "It is a decorative element with no functional purpose", "It prevents the raft from ever being separated from the ship", "It connects the raft to the rescue helicopter"], "correct": 0, "exp": "The guide states the Weak Link allows the Operating Cord to separate from the ship if it sinks, letting the liferaft inflate by itself."}, {"q": "Roughly how much force does the guide say is required to break the liferaft's weak link?", "options": ["About 60 lbs", "About 6 lbs", "About 600 lbs", "About 150 lbs"], "correct": 0, "exp": "The guide states the Weak Link requires about 60 lbs of force to break \u2014 something any fit mariner should be able to do."}, {"q": "What is the length of a liferaft's Operating Cord, per the guide?", "options": ["100 feet", "50 feet", "25 feet", "200 feet"], "correct": 0, "exp": "The guide states the length of the Operating Cord is 100 feet."}, {"q": "What passenger capacity range does the guide give for a typical inflatable liferaft, and which size is most common?", "options": ["4 to 25 people, with 25-person rafts being most common", "10 to 50 people, with 50-person rafts most common", "4 to 150 people, with 150-person rafts most common", "There is no standard capacity"], "correct": 0, "exp": "The guide states liferafts carry between 4 and 25 people, with 25-person rafts most common (cruise ships may have 100+ person rafts)."}, {"q": "What are the two ways the guide says a liferaft's HRU can be activated?", "options": ["Squeezing the hockey puck manually, or hydrostatic pressure at depth", "Only automatically, by GPS trigger", "Only manually, there is no automatic option", "By radio signal from the bridge"], "correct": 0, "exp": "The guide states the HRU can be activated either by a mariner squeezing the hockey puck, or automatically by hydrostatic pressure once submerged."}, {"q": "At approximately what depth and pressure does the HRU activate automatically, per the guide?", "options": ["10-15 feet, about 6 lbs per square inch", "50-60 feet, about 20 lbs per square inch", "1-2 feet, about 1 lb per square inch", "100 feet, about 45 lbs per square inch"], "correct": 0, "exp": "The guide states hydrostatic pressure reaches about 6 lbs per square inch at a depth of 10-15 feet, which activates the HRU."}, {"q": "In a manual liferaft launch, what is the first step according to the guide?", "options": ["Hit the button in the center of the 'hydrostatic release' device to release the tie-down straps", "Immediately jump into the water", "Cut the weak link with a knife", "Inflate the raft while it is still in the cradle"], "correct": 0, "exp": "The guide states the first step of a manual launch is hitting the button in the center of the hydrostatic release device, which releases the tie-down straps."}, {"q": "Why does the guide say launching a liferaft manually may require two or more people?", "options": ["Because liferafts weigh up to 400 pounds", "Because two people must pull the cord simultaneously", "Because it requires one person to steer and one to inflate", "Regulations require a minimum of two crew present at all times"], "correct": 0, "exp": "The guide notes that because liferafts weigh up to 400 pounds, launching may be a job for two or more people."}, {"q": "Before putting the liferaft container overboard during a manual launch, what should be done with the sea painter?", "options": ["It should be tied off to the rail or another fixture to prevent the raft from drifting away", "It should be cut immediately", "It should be left completely loose", "It should be wrapped fully around the container"], "correct": 0, "exp": "The guide states the sea painter should be tied off to the rail or another fixture before the raft and container go overboard, to prevent it from drifting away."}, {"q": "According to the guide, what should you NOT do with the packing bands around a liferaft container during launch?", "options": ["Remove them \u2014 they will break automatically when the raft inflates", "Cut them with scissors before throwing the container overboard", "Tie them to the sea painter", "Store them separately for reuse"], "correct": 0, "exp": "The guide explicitly instructs not to remove the packing bands from around the container, as they will break automatically when the liferaft inflates."}, {"q": "After the liferaft container is in the water, what should be done with the sea painter to trigger inflation?", "options": ["Let it pay out to its full 100-foot length, then give it a sharp pull", "Immediately cut it to release the raft", "Leave it slack and wait for automatic inflation only", "Tie a second line to it for extra tension"], "correct": 0, "exp": "The guide instructs letting the sea painter pay out to its full length (100 feet), then giving it a sharp pull to activate the CO2 canister."}, {"q": "If you hear a hissing noise right after a liferaft inflates, what does the guide say this means?", "options": ["Likely just excess CO2 bleeding off \u2014 don't panic", "The raft has a critical puncture and will sink", "The CO2 canister failed to activate", "The ballast bags are filling incorrectly"], "correct": 0, "exp": "The guide states that hearing a hissing noise after inflation is likely just excess CO2 bleeding off, and instructs not to panic."}, {"q": "In an automatic (mechanical) liferaft launch where water depth is LESS than 100 feet, what happens to the sea painter?", "options": ["It remains attached to the vessel's deck to keep the raft container near the vessel", "It is cut automatically by the HRU", "It detaches immediately regardless of depth", "It is unaffected by water depth"], "correct": 0, "exp": "The guide states that if the water depth is less than 100 feet, the sea painter remains attached to the vessel's deck, keeping the raft container nearby until inflated with a pull."}, {"q": "In an automatic launch where the water depth is GREATER than 100 feet, what triggers the raft's inflation?", "options": ["The sea painter pays out to its maximum length as the container floats up", "A crew member must dive down to pull the cord manually", "The raft never inflates in deep water", "A separate deep-water CO2 canister activates"], "correct": 0, "exp": "The guide states that in depths greater than 100 feet, the raft inflates when the sea painter pays out to its maximum length as the container floats to the surface."}, {"q": "In the automatic launch sequence, what happens at approximately 10 feet of depth as the vessel sinks?", "options": ["Water pressure actuates the release mechanism, freeing the raft from its stowage", "The weak link breaks immediately", "The strobe light activates", "The CO2 canister empties completely"], "correct": 0, "exp": "The guide's Sequence of Events states that at about 10 feet of depth, water pressure actuates the release mechanism, freeing the buoyant raft to float to the surface."}, {"q": "In the automatic launch sequence, what deploys automatically as the raft inflates, to reduce drift?", "options": ["A sea anchor", "A second liferaft", "An anchor chain", "A parachute"], "correct": 0, "exp": "The guide's sequence states a sea anchor deploys automatically as the raft inflates, reducing drift."}, {"q": "In the automatic launch sequence, what event finally allows the raft to float completely free of a sinking vessel?", "options": ["The weak link breaking, which detaches the sea painter from the vessel", "The captain manually releasing it from the bridge", "The CO2 canister exploding", "The gasket dissolving in seawater"], "correct": 0, "exp": "The guide states the weak link attaches the sea painter to the vessel; once it breaks, the raft is permitted to float free, and the water-activated lights come on."}, {"q": "What two features does the guide say help prevent a liferaft from being blown away by high winds after inflation?", "options": ["A streamed sea anchor and ballast/stabilizer bags", "Extra weight added to the canopy", "A parachute anchor and a keel", "Nothing \u2014 wind cannot move an inflated raft"], "correct": 0, "exp": "The guide states a sea anchor is streamed automatically to create drag, and ballast/stabilizer bags on the bottom fill with seawater to resist drifting."}, {"q": "How long is the battery life of a liferaft's all-round white strobing light, per the guide?", "options": ["30 days", "7 days", "90 days", "24 hours"], "correct": 0, "exp": "The guide states the strobe light is water activated with a battery life of 30 days."}, {"q": "If survivors unscrew the liferaft's interior strobe light bulb so they can sleep, what does the guide say about the battery?", "options": ["It helps them sleep, but does NOT conserve the battery", "It both helps them sleep AND conserves the battery", "Unscrewing the bulb is not permitted under any circumstance", "It has no effect on sleep or battery"], "correct": 0, "exp": "The guide explicitly notes that unscrewing the inside light lets survivors sleep, but clarifies that unscrewing the bulb does NOT conserve battery life."}, {"q": "What should be done with the first bag or two of water collected by a liferaft's rain-catcher, and why?", "options": ["Throw it out, since it will have caught salt from the air", "Drink it first, since it's the freshest", "Save it separately as emergency backup", "Use it to clean wounds only"], "correct": 0, "exp": "The guide instructs throwing out the first bag or two of rain-caught water because it will have caught salt from the air."}, {"q": "What forms the 'walls' of a typical liferaft, per the guide, with handholds attached called 'man ropes'?", "options": ["The gunwales", "The ballast bags", "The tubular arch", "The boarding ramp"], "correct": 0, "exp": "The guide states the gunwales form the walls of the liferaft, with man ropes/handholds for survivors in the water."}, {"q": "What is the purpose of the inflatable floor in a liferaft, per the guide?", "options": ["To provide insulation from the cold water", "To increase overall buoyancy of the raft", "To act as an emergency flotation device if the raft fails", "To store survival equipment"], "correct": 0, "exp": "The guide states the floor can be inflated, using the hand pump, to provide insulation from the cold water."}, {"q": "What component supports the canopy that shelters survivors from the elements?", "options": ["The tubular arch", "The gunwale", "The cleat", "The ballast bag"], "correct": 0, "exp": "The guide states there is a tubular arch that supports the canopy providing shelter from the elements."}, {"q": "What is the 'righting strap' on a liferaft used for, per the guide?", "options": ["To flip the liferaft back over if it capsizes", "To secure the canopy in high winds", "To tie multiple liferafts together", "To attach the sea anchor"], "correct": 0, "exp": "The guide states the righting strap, located underneath the raft, is used to flip the liferaft over in case it capsizes."}, {"q": "If a liferaft is endangered by burning oil on the water, what does the guide instruct survivors to do?", "options": ["Cut the sea painter and sea anchor line so the raft drifts away from the flames", "Deflate the raft and swim to safety", "Paddle directly into the flames to pass through quickly", "Wait for the fire to burn out before moving"], "correct": 0, "exp": "The guide instructs cutting the sea painter and the sea anchor line so the raft drifts away from burning oil, noting there is a spare sea anchor aboard."}, {"q": "Why does the guide recommend tying multiple liferafts together if more than one is in the area?", "options": ["To make a larger target for sighting by rescue craft", "To combine limited food and water supplies only", "It is not recommended, rafts should stay separated", "To create a makeshift larger vessel for propulsion"], "correct": 0, "exp": "The guide states tying rafts together makes a larger target for sighting by rescue craft."}, {"q": "What should everyone do immediately upon boarding a liferaft, per the guide, to avoid vomiting and dehydration?", "options": ["Take an anti-seasickness tablet", "Drink a full ration of water", "Remove their lifejacket for comfort", "Lie flat and avoid all movement"], "correct": 0, "exp": "The guide states everyone should take an anti-sea sickness tablet upon boarding to avoid vomiting and consequent dehydration."}, {"q": "How should a hole in a liferaft below the waterline be repaired, per the guide?", "options": ["With sealing clamps", "With duct tape only", "It cannot be repaired at sea", "By deflating the entire raft first"], "correct": 0, "exp": "The guide states a hole below the waterline can be repaired with sealing clamps, while holes elsewhere use glue or patches."}, {"q": "What supplied tools does the guide say are used to remove water from inside the liferaft?", "options": ["Sponges, bailers, and a hand-pump", "A bucket and rope only", "An electric bilge pump", "There is no way to remove water once aboard"], "correct": 0, "exp": "The guide states water inside the liferaft can be removed using the supplied sponges, bailers, and hand-pump."}, {"q": "Per the guide, which signal should be used at NIGHT, and how should it be deployed?", "options": ["Handheld flares, activated outside the liferaft, downwind", "Orange smoke signals, thrown into the water", "A signal mirror reflecting moonlight", "Dye markers placed on the windward side"], "correct": 0, "exp": "The guide states nighttime signaling uses handheld flares, activated outside of the liferaft, downwind."}, {"q": "Per the guide, which signal should be used in DAYTIME by throwing it into the water on the downwind side?", "options": ["Orange smoke signals", "Handheld red flares", "The signaling mirror", "The strobe light"], "correct": 0, "exp": "The guide states daytime signaling uses orange smoke signals, thrown in the water on the downwind side of the liferaft."}, {"q": "Per the guide, on which side of the liferaft should dye markers be placed during the day?", "options": ["The windward side", "The downwind (leeward) side", "Directly underneath the raft", "It does not matter"], "correct": 0, "exp": "The guide specifically states dye markers should be placed on the windward side of the water during the day."}, {"q": "What daytime signaling tool works by reflecting sunlight toward a rescue craft?", "options": ["The signaling mirror", "The orange smoke signal", "The handheld flare", "The strobe light"], "correct": 0, "exp": "The guide states the signaling mirror should be used in daytime to reflect sunlight toward the rescue craft."}, {"q": "In WARM water/climate, what does the guide recommend doing with your clothing, and why does this contrast with cold conditions?", "options": ["Keep clothing wet to stay cool; in cold weather, stay dry as much as possible", "Remove all clothing regardless of temperature", "Keep clothing dry in both warm and cold conditions", "Soak clothing in seawater to conserve fresh water"], "correct": 0, "exp": "The guide states that in warm water, keeping clothing wet helps you stay cool, while in cold weather you should stay as dry as possible."}, {"q": "How many types of Personal Flotation Devices (PFDs) does the guide list?", "options": ["Five", "Three", "Four", "Six"], "correct": 0, "exp": "The guide lists five PFD types: Type I, Type II, Type III, Type IV (liferings), and Type V (special/restricted use)."}, {"q": "Which PFD type designation does the guide assign to liferings/life buoys?", "options": ["Type IV", "Type I", "Type III", "Type V"], "correct": 0, "exp": "The guide states Type IV PFDs are liferings."}, {"q": "What length of attached line must a STCW-approved lifering have, per the guide?", "options": ["100 feet", "50 feet", "25 feet", "200 feet"], "correct": 0, "exp": "The guide states an STCW-approved lifering must have an attached line of 100 feet in length."}, {"q": "What material must an STCW-approved lifering be molded from, per the guide?", "options": ["High-impact polyethylene", "Fiberglass", "Aluminum", "Reinforced rubber"], "correct": 0, "exp": "The guide states a lifering must be molded of high-impact polyethylene."}, {"q": "Which optional features does the guide mention some liferings may have to aid location of a person overboard?", "options": ["Smoke canisters and strobing lights", "A built-in radio transmitter", "A GPS tracking chip", "An inflatable sail"], "correct": 0, "exp": "The guide mentions some liferings have smoke canisters that activate on release, and others have strobing lights for visibility in darkness."}, {"q": "Why does the guide say a lifejacket should be donned only after going outside the vessel, not inside?", "options": ["A person could become trapped floating in a flooded compartment, unable to escape", "Lifejackets are uncomfortable to wear indoors", "It is faster to put them on outside", "Indoor donning voids the lifejacket's warranty"], "correct": 0, "exp": "The guide explains that if a mariner puts on a lifejacket inside and the compartment floods, they could become stuck floating in the compartment, unable to escape."}, {"q": "What quantity of lifejackets, relative to crew and passenger capacity, must a vessel carry per the guide?", "options": ["150-200%", "Exactly 100%", "50%", "There is no minimum requirement"], "correct": 0, "exp": "The guide states every vessel must have 150-200% of the capacity of crew and passengers in lifejackets."}, {"q": "Where does the guide say lifejackets should be stowed?", "options": ["At least at the abandon ship stations, and also possibly in personal crew rooms", "Only in the engine room", "Only in a single central locker", "They do not need a fixed stowage location"], "correct": 0, "exp": "The guide states lifejackets should be stowed at least at the abandon ship stations, and can also be stowed in personal crew rooms."}, {"q": "What three features must a lifejacket have to be STCW classed, per the guide?", "options": ["Reflective tape, a water-activated light, and a whistle", "A radio, EPIRB, and SART", "22 lbs of buoyancy, a hood, and gloves", "A sea anchor, rain-catcher, and paddle"], "correct": 0, "exp": "The guide states an STCW classed lifejacket must have reflective tape, a water-activated light, and a whistle."}, {"q": "What is the defining function of a Type I PFD, per the guide?", "options": ["It turns an unconscious person from face-down to a vertical or slightly backward position, with at least 22 lbs of buoyancy", "It is designed only for recreational boating", "It has no turning capability but the highest buoyancy of all types", "It is only used as a work vest"], "correct": 0, "exp": "The guide states Type I PFDs turn an unconscious person face-up and must have at least 22 pounds (9.07 kg) of buoyancy."}, {"q": "How does a Type II PFD compare to a Type I PFD, per the guide?", "options": ["Same turning function, but with less buoyancy", "More buoyancy but no turning function", "Identical in every respect", "Type II is only for liferings"], "correct": 0, "exp": "The guide states Type II PFDs turn an unconscious person face-up in the same manner as Type I, just with less buoyancy."}, {"q": "What is the minimum buoyancy requirement for a Type III PFD, per the guide, and how does this compare to Type II?", "options": ["At least 15\u00bd lbs \u2014 the same buoyancy requirement as Type II", "22 lbs \u2014 more than Type II", "5 lbs \u2014 much less than Type II", "There is no minimum for Type III"], "correct": 0, "exp": "The guide states Type III PFDs must have at least 15\u00bd pounds of buoyancy, the same as the Type II requirement."}, {"q": "What key requirement does a Type III PFD lack compared to Type I and Type II, per the guide?", "options": ["The requirement to turn an unconscious person to a face-up position", "Any buoyancy requirement at all", "A requirement to float at all", "A whistle requirement"], "correct": 0, "exp": "The guide notes Type III PFDs lack the turning requirement to bring an unconscious wearer to a face-up position, which Type I and II PFDs must have."}, {"q": "What example does the guide give of a Type V PFD in maritime work?", "options": ["A work vest worn while working over or near the side of the ship", "A recreational boating vest", "A liferaft canopy", "An immersion suit"], "correct": 0, "exp": "The guide states work vests, worn while working over or near the side of the ship, typically fall into the Type V category as a restricted/specific-use device."}, {"q": "Per the guide, in what type of environment are immersion suits generally carried?", "options": ["Sub-arctic areas like the North Sea", "Only tropical, warm-water regions", "Only on inland waterways", "They are required on every vessel regardless of route"], "correct": 0, "exp": "The guide states immersion suits are generally carried on ships that travel into sub-arctic areas like the North Sea."}, {"q": "How does the guide describe the function of the closed-cell polymer within an immersion suit's 'skin'?", "options": ["It acts as a thermal barrier and helps keep the wearer afloat, like a wet suit", "It generates heat electrically", "It filters seawater for drinking", "It repels sharks and other marine life"], "correct": 0, "exp": "The guide states the closed-cell polymer acts as a thermal barrier and helps keep the wearer afloat, functioning like a 'wet suit' of sorts."}, {"q": "In the guide's immersion suit donning steps, which direction should the hood face when the suit is laid out on deck?", "options": ["Toward you", "Away from you", "Facing the deck", "It does not matter"], "correct": 0, "exp": "The guide's Step 1 instructs laying the suit on deck with the hood toward you."}, {"q": "Why does the guide suggest lying or sitting on deck (rather than standing) when donning an immersion suit?", "options": ["Vessel movement often prevents standing, and it's easier to get the suit legs on first", "It is required by regulation", "Standing damages the suit's seams", "It allows two people to help simultaneously"], "correct": 0, "exp": "The guide notes vessel movement often prevents donning while standing, so it's often easier to lie or sit to get the legs on first, then stand."}, {"q": "Per the guide's alternate donning technique, which arm goes into its sleeve first, and what happens next?", "options": ["The weaker arm goes in first, then the free hand pulls the hood over, then the stronger arm goes in", "Both arms go in simultaneously before the hood", "The stronger arm always goes in first", "The hood goes on with no arms in yet, then both arms simultaneously"], "correct": 0, "exp": "The guide describes placing the weaker arm into its sleeve first, then reaching up to pull the hood over with the free hand, then placing the stronger arm into the other sleeve."}, {"q": "How does the guide instruct fully closing an immersion suit's zipper?", "options": ["Hold the zipper below the slide with one hand, and pull the lanyard with the other", "Push the zipper up with both thumbs simultaneously", "Ask another crew member to zip it from behind", "The zipper closes automatically once the hood is on"], "correct": 0, "exp": "The guide states you should hold the zipper below the slide with one hand, then fully close it by pulling on the lanyard with the other hand, and secure the flap over the face and mouth."}, {"q": "Which of the following is NOT listed by the guide as part of the minimum distress-communicating equipment aboard an STCW class vessel?", "options": ["GMDSS Console with INMARSAT-C and NavTex", "VHF Radios", "EPIRB(s) and SART(s)", "A dedicated satellite television uplink"], "correct": 3, "exp": "The guide lists GMDSS console (INMARSAT-C/NavTex), VHF radios, EPIRBs, and SARTs as the minimum distress equipment. A satellite TV uplink is not mentioned."}, {"q": "What does GMDSS stand for, per the guide?", "options": ["Global Maritime Distress and Safety System", "Global Marine Data Satellite Service", "General Marine Distress Signal System", "Global Maritime Detection and Surveillance System"], "correct": 0, "exp": "The guide defines GMDSS as the Global Maritime Distress and Safety System."}, {"q": "What does the INMARSAT-C component of GMDSS do, per the guide?", "options": ["Sends a typed distress message to satellites", "Broadcasts voice-only MAYDAY calls", "Only functions within 20 nautical miles", "Tracks fishing vessel positions"], "correct": 0, "exp": "The guide states INMARSAT-C sends out a typed distress message to satellites."}, {"q": "What does DSC stand for, and what does the guide say it does?", "options": ["Digital Selective Calling \u2014 sends a distinct distress code", "Direct Ship Communication \u2014 a backup radio band", "Data Signal Confirmation \u2014 verifies GPS accuracy", "Distress Satellite Channel \u2014 a TV emergency broadcast"], "correct": 0, "exp": "The guide defines DSC as Digital Selective Calling, which sends out a distinct code to alert other vessels."}, {"q": "On which VHF channel (or frequency) does DSC send its distress alert code, per the guide?", "options": ["Channel 70, or 2187.5 kHz", "Channel 16", "Channel 6", "Channel 13"], "correct": 0, "exp": "The guide specifically states DSC sends its distress code on VHF Channel 70, or 2187.5 kHz \u2014 not the commonly assumed Channel 16."}, {"q": "How is a DSC distress alert activated, per the guide?", "options": ["By pressing and holding the large red button on the VHF radio or GMDSS console", "By typing a text message and pressing send", "It activates automatically when the vessel takes on water", "By calling the USCG directly by satellite phone"], "correct": 0, "exp": "The guide states DSC is activated by simply pressing and holding the large red button on the VHF radio or GMDSS console."}, {"q": "What happens automatically to nearby DSC-enabled vessels when they receive a distress alert, per the guide?", "options": ["Their VHF radio automatically tunes to Channel 70 and sounds a loud audible alarm", "Their engines automatically shut down", "They receive a printed distress letter by mail", "Nothing happens unless they manually check the radio"], "correct": 0, "exp": "The guide states every DSC-enabled vessel receiving the alert will automatically have its VHF tuned to Channel 70, along with a loud audible alarm."}, {"q": "What is the approximate range of a VHF radio on a clear day, per the guide?", "options": ["About 20 nautical miles", "About 200 nautical miles", "About 2 nautical miles", "Unlimited, via satellite relay"], "correct": 0, "exp": "The guide states VHF radios have a range of about 20 nautical miles on a clear day."}, {"q": "What is the correct opening of a MAYDAY call, per the guide?", "options": ["\"May-day, May-day, May-day\"", "\"Pan-pan, Pan-pan, Pan-pan\"", "\"Security, Security, Security\"", "\"This is an emergency\" (said once)"], "correct": 0, "exp": "The guide states the MAYDAY call precedes with 'May-day, May-day, May-day.'"}, {"q": "After stating 'Mayday' three times, what comes next in the guide's MAYDAY procedure?", "options": ["Identifying the vessel's name, repeated three times", "Identifying the number of crew immediately", "Ending the call immediately", "Switching to Channel 16 for the rest of the call"], "correct": 0, "exp": "The guide's MAYDAY sequence follows the triple 'Mayday' with identifying the vessel's name, repeated three times."}, {"q": "How should a MAYDAY call properly end, per the guide?", "options": ["With \"May-day, May-day, May-day\" again", "With \"Over and out\"", "By hanging up immediately after giving crew count", "With the vessel's registration number"], "correct": 0, "exp": "The guide's MAYDAY procedure ends with repeating 'May-day, May-day, May-day.'"}, {"q": "What does EPIRB stand for?", "options": ["Emergency Position Indicating Radio Beacon", "Emergency Position Indicating Radio Buoy", "Emergency Ping and Instant Rescue Beacon", "Electronic Position Identification Radio Broadcast"], "correct": 0, "exp": "EPIRB stands for Emergency Position Indicating Radio Beacon (note: the student guide's own text omits 'Position' from the acronym, but this is the standard, correct expansion)."}, {"q": "What specific information does an EPIRB actually transmit, according to the guide?", "options": ["Only the vessel's name and its latitude/longitude \u2014 NOT the nature of the distress", "The vessel's name, position, AND full details of the emergency", "Only a generic tone with no identifying data", "The number of crew and type of survival craft in use"], "correct": 0, "exp": "The guide is explicit that an EPIRB only sends the vessel's name and lat/long position \u2014 not the nature of the distress, which must be relayed separately."}, {"q": "What mechanism does the guide say an EPIRB has, similar to a liferaft, that lets it float free if the vessel sinks?", "options": ["A Hydrostatic Release Unit (HRU)", "A manual ripcord only", "A GPS auto-eject chip", "A remote radio trigger from shore"], "correct": 0, "exp": "The guide states EPIRBs have an HRU, just like a liferaft, so they float free of a sinking vessel and activate automatically."}, {"q": "How often should an EPIRB be tested, per the guide?", "options": ["Once a month", "Once a week", "Once a year", "Only before departure on each voyage"], "correct": 0, "exp": "The guide states EPIRBs should be tested once a month."}, {"q": "Where does the guide say an EPIRB is typically also kept, in addition to being stowed to float free?", "options": ["On the bridge", "In the engine room", "In each crew member's cabin", "In the galley"], "correct": 0, "exp": "The guide states one EPIRB is also typically kept on the bridge at all times."}, {"q": "What does SART stand for, per the guide?", "options": ["Search-and-Rescue Transponder", "Satellite Alert Radio Transmitter", "Ship Automated Response Terminal", "Signal Amplification Radio Tower"], "correct": 0, "exp": "The guide defines SART as a Search-and-Rescue Transponder."}, {"q": "What activates a SART, per the guide, so that it appears as dots on a nearby vessel's radar?", "options": ["A passing vessel's X-Band radar beam hitting the transponder", "The SART proactively pings satellites every few minutes", "Pressing a red button, exactly like DSC", "GMDSS satellite handshake only"], "correct": 0, "exp": "The guide explains that a vessel's X-Band radar signal hits the SART transponder, activating it and causing it to appear as dots on that vessel's radar screen."}, {"q": "Where can SARTs be located aboard a vessel, per the guide?", "options": ["On the bridge, in the lifeboats, or rigidly attached to a lifeboat", "Only inside the engine room", "Only in the captain's cabin", "They are not stored aboard, only issued by SAR authorities"], "correct": 0, "exp": "The guide states SARTs can be located on the bridge, in the lifeboats, or even rigidly attached to a lifeboat."}, {"q": "What is the priority order for abandoning ship, per the guide?", "options": ["Lifeboat, Liferaft, Immersion Suit, PFD", "PFD, Immersion Suit, Liferaft, Lifeboat", "Liferaft, Lifeboat, PFD, Immersion Suit", "Immersion Suit, PFD, Lifeboat, Liferaft"], "correct": 0, "exp": "The guide states the priority in abandon ship is Lifeboat, Liferaft, Immersion Suit, PFD \u2014 every effort should be made to NOT get into the water."}, {"q": "What is the guide's stated reasoning for trying to avoid entering the water directly during abandon ship?", "options": ["To conserve body heat and energy", "Because the water is always contaminated with fuel", "Because swimming is against maritime regulations", "Because lifejackets are not water-resistant"], "correct": 0, "exp": "The guide states every effort should be made to not get into the water in order to conserve body heat and energy."}, {"q": "What does the guide advise mariners to do with clothing and equipment before heading to their abandon ship station?", "options": ["Wear as much clothing as possible and bring all useful equipment", "Remove all unnecessary clothing to move faster", "Leave all personal equipment behind for weight savings", "Change into a swimsuit for easier swimming"], "correct": 0, "exp": "The guide states mariners should wear as much clothing as possible and bring all useful equipment with them to their abandon ship stations."}, {"q": "If forced to swim through water where burning oil is present, what does the guide instruct?", "options": ["Swim upwind, if possible, and untie the lifejacket to swim underneath the oil", "Swim downwind and stay on the surface at all times", "Remain completely still and wait for rescue", "Keep the lifejacket tightly secured and swim straight through the flames"], "correct": 0, "exp": "The guide states one should swim upwind (since wind blows the oil away) and untie the lifejacket to swim underneath the burning oil."}, {"q": "If forced to surface while swimming underwater (e.g., beneath burning oil), what technique does the guide recommend?", "options": ["Clear a hole in the surface with your hand by splashing in a circle before surfacing", "Surface as fast as possible with no preparation", "Hold your breath and surface directly through any oil present", "Swim in a zigzag pattern to avoid detection"], "correct": 0, "exp": "The guide instructs clearing a hole in the surface with your hand by splashing in a circle before allowing your head to break the surface."}, {"q": "What does AMVER stand for, per the guide?", "options": ["Automated Mutual-assistance Vessel Rescue", "American Maritime Vessel Emergency Response", "Automatic Marine Vessel Emergency Registry", "Atlantic Maritime Vessel Rescue"], "correct": 0, "exp": "The guide defines AMVER as the Automated Mutual-assistance Vessel Rescue system."}, {"q": "Who operates the AMVER system, and what does the guide say about its cost?", "options": ["The USCG, based in New York City, and it is entirely free to use", "A private company, and it requires an annual subscription fee", "The IMO, and it charges per position report", "Lloyd's Register, and it is free only for member vessels"], "correct": 0, "exp": "The guide states AMVER is operated by the USCG, based in New York City, and is entirely free to use."}, {"q": "Per the guide, where can the AMVER position report form be found, and when is it typically sent?", "options": ["In Publication 102, sent alongside the noon (12:00) position report", "In the SOLAS manual, sent only during emergencies", "It is submitted verbally over VHF only", "It is automatically generated by the EPIRB"], "correct": 0, "exp": "The guide states AMVER position reports use a form found in Publication 102, sent in alongside the ship's 12:00 position report to the owner's office."}, {"q": "Why does a person's body temperature drop so rapidly upon entering cold water, per the guide?", "options": ["Over 95% of the body is submerged, so body temperature quickly equalizes with the water temperature", "Cold water causes an allergic reaction that lowers temperature", "The lifejacket traps cold air against the skin", "It only happens if the person is already hypothermic before entering"], "correct": 0, "exp": "The guide explains that with over 95% of the body submerged, body temperature quickly equalizes toward the water's temperature."}, {"q": "At what core body temperature does mild hypothermia begin, per the guide?", "options": ["Below 95 degrees F", "Below 90 degrees F", "Below 82 degrees F", "Below 98.6 degrees F only if shivering is present"], "correct": 0, "exp": "The guide states mild hypothermia sets in as body temperature lowers below 95 degrees F."}, {"q": "Which symptoms does the guide associate with MILD hypothermia?", "options": ["Teeth chattering, shivering, confusion, lethargy, headaches, cyanosis, lack of blood flow", "Shivering stops completely and pupils dilate", "Cannot move arms or legs at all", "No symptoms are present until the moderate stage"], "correct": 0, "exp": "The guide lists mild hypothermia symptoms as teeth chattering, shivering, confusion, lethargy, headaches, cyanosis, and lack of blood flow."}, {"q": "What temperature range does the guide give for MODERATE hypothermia?", "options": ["82-90 degrees F", "90-95 degrees F", "Below 82 degrees F", "95-98.6 degrees F"], "correct": 0, "exp": "The guide states moderate hypothermia occurs at 82-90 degrees F."}, {"q": "Which symptoms does the guide associate with MODERATE hypothermia?", "options": ["Lack of coordination, cyanosis in lips/ears/digits, slurred speech, confusion", "Teeth chattering only, with full coordination intact", "Complete cessation of all bodily functions", "Elevated body temperature and rapid heartbeat"], "correct": 0, "exp": "The guide lists moderate hypothermia symptoms as lack of coordination, cyanosis in the lips, ears, and digits, slurred speech, and confusion."}, {"q": "At what core body temperature does the guide say SEVERE hypothermia occurs?", "options": ["Below 82 degrees F", "Below 95 degrees F", "82-90 degrees F", "Below 70 degrees F"], "correct": 0, "exp": "The guide states severe hypothermia occurs below 82 degrees F."}, {"q": "If a hypothermia victim's shivering suddenly stops, what does this indicate per the guide \u2014 and why is this counterintuitive?", "options": ["It signals SEVERE hypothermia and worsening condition, not recovery, since major bodily functions are ceasing", "It means the person is recovering and warming up", "It has no medical significance at any stage", "It only occurs in mild hypothermia and is not concerning"], "correct": 0, "exp": "The guide lists 'shivering stops' as a symptom of severe hypothermia (below 82\u00b0F), where major bodily functions cease \u2014 the opposite of what stopped shivering might intuitively suggest."}, {"q": "What survival technique does the guide recommend for people in the water together, to preserve body heat?", "options": ["Stay together, body-to-body", "Spread out to maximize sea coverage for spotting", "Take turns submerging to conserve group energy", "Remove lifejackets to swim in a tighter formation"], "correct": 0, "exp": "The guide states it is important to stay together, body-to-body, to preserve body heat."}, {"q": "Once hypothermic survivors are recovered onto a survival craft or by SAR, what does the guide instruct?", "options": ["Treat for shock and passively warm the survivors", "Immediately immerse them in hot water", "Give them coffee or alcohol to warm up quickly", "Have them perform vigorous exercise to generate heat"], "correct": 0, "exp": "The guide instructs treating recovered survivors for shock and passively warming them \u2014 not actively/rapidly warming them."}];
+
+document.getElementById('bankSizeLabel').textContent = QUESTIONS.length;
+document.getElementById('allCountBtn').textContent = QUESTIONS.length;
+
+let session = [];      // shuffled question objects for current run
+let idx = 0;
+let score = 0;
+let answered = false;
+let userAnswers = [];  // {qIndexInSession, chosen, correct}
+
+const screenSelect = document.getElementById('screen-select');
+const screenQuiz = document.getElementById('screen-quiz');
+const screenResults = document.getElementById('screen-results');
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function startSession(count){
+  const pool = shuffle(QUESTIONS);
+  session = count === 'all' ? pool : pool.slice(0, count);
+  idx = 0; score = 0; answered = false; userAnswers = [];
+  screenSelect.classList.add('hidden');
+  screenResults.classList.add('hidden');
+  screenQuiz.classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answered = false;
+  const item = session[idx];
+  document.getElementById('progressLabel').textContent = (idx+1) + ' / ' + session.length;
+  document.getElementById('progressFill').style.width = ((idx)/session.length*100) + '%';
+  document.getElementById('qText').textContent = item.q;
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('nextBtn').textContent = (idx === session.length-1) ? 'See Results' : 'Next';
+
+  const explainBox = document.getElementById('explainBox');
+  explainBox.classList.remove('show');
+  explainBox.innerHTML = '';
+
+  const optList = document.getElementById('optList');
+  optList.innerHTML = '';
+  const letters = ['A','B','C','D'];
+
+  const optOrder = shuffle(item.options.map((text, origIdx) => ({text, origIdx})));
+
+  optOrder.forEach((opt, displayIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = '<span class="opt-letter">'+letters[displayIdx]+'</span><span>'+opt.text+'</span>';
+    btn.addEventListener('click', () => selectOption(opt.origIdx, btn, optList, item));
+    optList.appendChild(btn);
+  });
+}
+
+function selectOption(chosenOrigIdx, btnEl, optList, item){
+  if(answered) return;
+  answered = true;
+  const isCorrect = chosenOrigIdx === item.correct;
+  if(isCorrect) score++;
+
+  userAnswers.push({
+    q: item.q,
+    options: item.options,
+    correct: item.correct,
+    chosen: chosenOrigIdx,
+    isCorrect: isCorrect,
+    exp: item.exp
+  });
+
+  Array.from(optList.children).forEach(child => {
+    child.disabled = true;
+  });
+
+  // mark all buttons based on their origIdx stored via matching text
+  Array.from(optList.children).forEach(child => {
+    const text = child.querySelector('span:last-child').textContent;
+    const thisOrigIdx = item.options.indexOf(text);
+    if(thisOrigIdx === item.correct){
+      child.classList.add('correct');
+    } else if(thisOrigIdx === chosenOrigIdx){
+      child.classList.add('incorrect');
+    } else {
+      child.classList.add('dim');
+    }
+  });
+
+  const explainBox = document.getElementById('explainBox');
+  explainBox.innerHTML = '<b>' + (isCorrect ? 'Correct. ' : 'Not quite. ') + '</b>' + item.exp;
+  explainBox.classList.add('show');
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  idx++;
+  if(idx >= session.length){
+    showResults();
+  } else {
+    renderQuestion();
+  }
+});
+
+function showResults(){
+  document.getElementById('progressFill').style.width = '100%';
+  screenQuiz.classList.add('hidden');
+  screenResults.classList.remove('hidden');
+
+  document.getElementById('scoreNum').innerHTML = score + '<span>/' + session.length + '</span>';
+  const pct = Math.round((score/session.length)*100);
+  let msg;
+  if(pct === 100) msg = "Perfect run. You know this material cold.";
+  else if(pct >= 85) msg = "Strong result — review the misses below, then you're set.";
+  else if(pct >= 70) msg = "Solid, but a few gaps to close before the exam.";
+  else msg = "Worth another pass through the guide — review the misses below.";
+  document.getElementById('scoreMsg').textContent = pct + '% — ' + msg;
+
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = '';
+  const misses = userAnswers.filter(a => !a.isCorrect);
+  if(misses.length === 0){
+    reviewList.innerHTML = '<p style="text-align:center;color:#555;font-size:14px;">No misses to review — nice work.</p>';
+  } else {
+    const heading = document.createElement('p');
+    heading.style.cssText = 'font-family:"Oswald","Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:0.05em;font-size:13px;color:#7c7460;margin-bottom:8px;';
+    heading.textContent = 'Review — ' + misses.length + ' missed';
+    reviewList.appendChild(heading);
+    misses.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'review-item';
+      div.innerHTML =
+        '<span class="review-tag tag-wrong">Missed</span>' +
+        '<p class="review-q">' + m.q + '</p>' +
+        '<p class="review-answer">Your answer: ' + m.options[m.chosen] + '</p>' +
+        '<p class="review-answer">Correct answer: ' + m.options[m.correct] + '</p>' +
+        '<p class="review-exp">' + m.exp + '</p>';
+      reviewList.appendChild(div);
+    });
+  }
+}
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const c = btn.getAttribute('data-count');
+    startSession(c === 'all' ? 'all' : parseInt(c,10));
+  });
+});
+
+document.getElementById('retakeBtn').addEventListener('click', () => {
+  startSession(session.length === QUESTIONS.length ? 'all' : session.length);
+});
+document.getElementById('menuBtn').addEventListener('click', () => {
+  screenResults.classList.add('hidden');
+  screenSelect.classList.remove('hidden');
+});
+</script>
+</body>
+</html>
