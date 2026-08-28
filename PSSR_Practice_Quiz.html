@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSSR Practice Quiz — Personal Safety &amp; Social Responsibility</title>
+<style>
+  :root{
+    --navy:#0B2A45;
+    --navy-deep:#071B30;
+    --plate:#F1ECDD;
+    --plate-line:#C9BFA0;
+    --orange:#E2541F;
+    --orange-deep:#B8400F;
+    --steel:#4A6C8C;
+    --good:#1F7A54;
+    --bad:#B4322A;
+    --ink:#182430;
+    --paper:#FAF7EF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(74,108,140,0.18), transparent 45%),
+      var(--navy-deep);
+    color:var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", Arial, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:760px;
+  }
+
+  /* ---------- Header: stenciled lifeboat capacity plate ---------- */
+  .plate{
+    background: var(--plate);
+    border:3px solid var(--navy);
+    border-radius:6px;
+    padding:22px 24px 18px;
+    position:relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    margin-bottom:22px;
+  }
+  .plate::before{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border:1px dashed var(--plate-line);
+    border-radius:3px;
+    pointer-events:none;
+  }
+  .plate-eyebrow{
+    font-family: "Oswald", "Arial Narrow", sans-serif;
+    letter-spacing:0.22em;
+    font-size:12px;
+    color:var(--steel);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  .plate-title{
+    font-family: "Oswald", "Arial Narrow", sans-serif;
+    font-weight:600;
+    font-size:clamp(26px,5vw,36px);
+    letter-spacing:0.03em;
+    color:var(--navy);
+    text-transform:uppercase;
+    margin:0;
+    line-height:1.05;
+  }
+  .plate-sub{
+    margin:8px 0 0;
+    font-size:13px;
+    color:var(--ink);
+    opacity:0.75;
+  }
+  .plate-stencil-row{
+    display:flex;
+    gap:18px;
+    margin-top:14px;
+    flex-wrap:wrap;
+    font-family: "Oswald","Arial Narrow",sans-serif;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--steel);
+  }
+  .plate-stencil-row span b{ color:var(--navy); }
+
+  /* ---------- Cards / surfaces ---------- */
+  .card{
+    background:var(--paper);
+    border-radius:6px;
+    padding:26px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+  }
+
+  /* ---------- Mode select screen ---------- */
+  .mode-grid{
+    display:grid;
+    gap:14px;
+  }
+  .mode-btn{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    width:100%;
+    text-align:left;
+    background:#fff;
+    border:2px solid #E4DEC9;
+    border-radius:8px;
+    padding:16px 18px;
+    cursor:pointer;
+    transition:border-color .15s ease, transform .1s ease;
+    font-family:inherit;
+  }
+  .mode-btn:hover{ border-color:var(--orange); transform:translateY(-1px); }
+  .mode-btn:focus-visible{ outline:3px solid var(--orange); outline-offset:2px; }
+  .mode-name{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:18px;
+    letter-spacing:0.02em;
+    color:var(--navy);
+    text-transform:uppercase;
+    margin:0 0 4px;
+  }
+  .mode-desc{ margin:0; font-size:13.5px; color:#555; }
+  .mode-count{
+    flex-shrink:0;
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:26px;
+    color:var(--orange);
+    border:2px solid var(--orange);
+    border-radius:50%;
+    width:56px; height:56px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .bank-note{
+    margin-top:16px;
+    font-size:12.5px;
+    color:#7c7460;
+    text-align:center;
+  }
+
+  /* ---------- Quiz screen ---------- */
+  .progress-wrap{
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:18px;
+  }
+  .progress-track{
+    flex:1; height:10px; background:#E4DEC9; border-radius:6px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; background:linear-gradient(90deg,var(--steel),var(--orange));
+    width:0%; transition:width .25s ease;
+  }
+  .progress-label{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:13px; color:var(--navy); white-space:nowrap;
+  }
+  .q-text{
+    font-size:18px;
+    line-height:1.4;
+    color:var(--ink);
+    margin:0 0 20px;
+    font-weight:600;
+  }
+  .opt-list{ display:grid; gap:10px; margin-bottom:6px; }
+  .opt-btn{
+    display:flex; align-items:flex-start; gap:12px;
+    text-align:left;
+    background:#fff;
+    border:2px solid #E4DEC9;
+    border-radius:8px;
+    padding:13px 15px;
+    font-size:14.5px;
+    line-height:1.4;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--ink);
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .opt-btn:hover:not(:disabled){ border-color:var(--steel); }
+  .opt-btn:focus-visible{ outline:3px solid var(--orange); outline-offset:1px; }
+  .opt-letter{
+    flex-shrink:0;
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:13px;
+    width:24px;height:24px;border-radius:50%;
+    border:2px solid #C9BFA0;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--steel);
+  }
+  .opt-btn.correct{ border-color:var(--good); background:#EAF6EF; }
+  .opt-btn.correct .opt-letter{ border-color:var(--good); background:var(--good); color:#fff; }
+  .opt-btn.incorrect{ border-color:var(--bad); background:#FBEBEA; }
+  .opt-btn.incorrect .opt-letter{ border-color:var(--bad); background:var(--bad); color:#fff; }
+  .opt-btn:disabled{ cursor:default; }
+  .opt-btn.dim{ opacity:0.55; }
+
+  .explain{
+    display:none;
+    margin-top:16px;
+    padding:14px 16px;
+    border-left:4px solid var(--steel);
+    background:#EEF2F6;
+    border-radius:4px;
+    font-size:14px;
+    line-height:1.5;
+  }
+  .explain.show{ display:block; }
+  .explain b{ color:var(--navy); }
+
+  .nav-row{
+    display:flex; justify-content:flex-end; margin-top:20px;
+  }
+  .btn-primary{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    padding:12px 26px;
+    font-size:14px;
+    cursor:pointer;
+    transition:background .12s ease;
+  }
+  .btn-primary:hover{ background:var(--orange-deep); }
+  .btn-primary:disabled{ background:#D8CFB8; cursor:not-allowed; }
+  .btn-secondary{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    background:transparent;
+    color:var(--navy);
+    border:2px solid var(--navy);
+    border-radius:6px;
+    padding:10px 22px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .btn-secondary:hover{ background:var(--navy); color:#fff; }
+
+  /* ---------- Results screen ---------- */
+  .score-hero{
+    text-align:center;
+    padding:10px 0 22px;
+    border-bottom:1px dashed var(--plate-line);
+    margin-bottom:20px;
+  }
+  .score-num{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:64px;
+    color:var(--navy);
+    line-height:1;
+    margin:0;
+  }
+  .score-num span{ font-size:28px; color:var(--steel); }
+  .score-msg{ margin:8px 0 0; font-size:14px; color:#555; }
+  .review-item{
+    padding:14px 0;
+    border-bottom:1px solid #EDE7D6;
+  }
+  .review-item:last-child{ border-bottom:none; }
+  .review-q{ font-weight:600; font-size:14.5px; margin:0 0 6px; }
+  .review-tag{
+    display:inline-block;
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:10.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border-radius:3px;
+    margin-bottom:6px;
+  }
+  .tag-correct{ background:#EAF6EF; color:var(--good); }
+  .tag-wrong{ background:#FBEBEA; color:var(--bad); }
+  .review-answer{ font-size:13.5px; color:#444; margin:2px 0; }
+  .review-exp{ font-size:13px; color:#666; margin-top:4px; }
+  .results-actions{
+    display:flex; gap:10px; justify-content:center; margin-top:24px; flex-wrap:wrap;
+  }
+  .hidden{ display:none !important; }
+
+  footer.credit{
+    text-align:center; color:#6b7f95; font-size:11.5px; margin-top:18px; letter-spacing:0.02em;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="plate">
+    <p class="plate-eyebrow">STCW Basic Safety Training</p>
+    <h1 class="plate-title">Personal Safety &amp; Social Responsibility</h1>
+    <p class="plate-sub">Derived from the course Student Guide.</p>
+    <div class="plate-stencil-row">
+      <span>Bank size <b id="bankSizeLabel">--</b> questions</span>
+      <span>Format <b>Multiple choice</b></span>
+      <span>Scored <b>Instant feedback</b></span>
+    </div>
+  </div>
+
+  <!-- MODE SELECT -->
+  <div id="screen-select" class="card">
+    <div class="mode-grid">
+      <button class="mode-btn" data-count="10">
+        <div>
+          <p class="mode-name">Quick Drill</p>
+          <p class="mode-desc">10 random questions pulled fresh from the full bank. Good for a five-minute warm-up between watches.</p>
+        </div>
+        <div class="mode-count">10</div>
+      </button>
+      <button class="mode-btn" data-count="50">
+        <div>
+          <p class="mode-name">Half Deck</p>
+          <p class="mode-desc">50 random questions, reshuffled each run. A solid pre-exam review without covering everything.</p>
+        </div>
+        <div class="mode-count">50</div>
+      </button>
+      <button class="mode-btn" data-count="all">
+        <div>
+          <p class="mode-name">Full Muster</p>
+          <p class="mode-desc">Every question in the bank, shuffled. Use this the night before the exam.</p>
+        </div>
+        <div class="mode-count" id="allCountBtn">--</div>
+      </button>
+    </div>
+    <p class="bank-note">Each run randomly selects and reorders questions — no two attempts are the same.</p>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="card hidden">
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">1 / 10</div>
+    </div>
+    <p class="q-text" id="qText"></p>
+    <div class="opt-list" id="optList"></div>
+    <div class="explain" id="explainBox"></div>
+    <div class="nav-row">
+      <button class="btn-primary" id="nextBtn" disabled>Next</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="screen-results" class="card hidden">
+    <div class="score-hero">
+      <p class="score-num" id="scoreNum">0<span>/0</span></p>
+      <p class="score-msg" id="scoreMsg"></p>
+    </div>
+    <div id="reviewList"></div>
+    <div class="results-actions">
+      <button class="btn-secondary" id="retakeBtn">Run again (new shuffle)</button>
+      <button class="btn-primary" id="menuBtn">Back to menu</button>
+    </div>
+  </div>
+
+  <footer class="credit">For study purposes only — always defer to your instructor and official course materials.</footer>
+</div>
+
+<script>
+const QUESTIONS = [{"q": "Which document does the guide say every vessel SHALL have, listing crew emergency roles and stations?", "options": ["A Station Bill, also known as a Muster List", "A Voyage Plan", "A Cargo Manifest", "A Safety Data Sheet"], "correct": 0, "exp": "The guide states every vessel SHALL have a document called a Station Bill, also known as a Muster List."}, {"q": "What is the guide's stated priority order for shipboard emergencies?", "options": ["Save lives and avoid injuries, then save the vessel, then protect the environment", "Protect the environment, then save the vessel, then save lives", "Save the vessel first, since it protects everyone aboard", "There is no set priority \u2014 it depends on the situation"], "correct": 0, "exp": "The guide states the priority in emergencies is: save lives and avoid injuries (people are the most important asset), save the vessel, then protect the environment."}, {"q": "Per the guide, how many or more seconds of continuous ringing of the ship's general alarm signals Fire and Emergency?", "options": ["10 or more seconds", "3 or more seconds", "30 or more seconds", "60 or more seconds"], "correct": 0, "exp": "The guide states the Fire and Emergency signal is 10 or more seconds of continuous ringing of the ship's general alarm."}, {"q": "Per the guide, how many short blasts (followed by one prolonged blast) signal Abandon Ship?", "options": ["7 or more short blasts, followed by one prolonged blast", "3 short blasts only, no prolonged blast", "1 short blast, followed by 7 prolonged blasts", "10 short blasts, no prolonged blast"], "correct": 0, "exp": "The guide states the Abandon Ship signal is 7 or more Short Blasts followed by one Prolonged Blast of the ship's whistle."}, {"q": "What is the Man Overboard whistle signal, per the guide?", "options": ["Three prolonged blasts, repeated four times", "Seven short blasts, followed by one prolonged blast", "Ten seconds of continuous ringing", "One long blast lasting a full minute"], "correct": 0, "exp": "The guide states the Man Overboard signal is THREE Prolonged Blasts on the ship's whistle, repeated FOUR times."}, {"q": "In the guide's example, the Master holds Muster Number 1. Where do they report during a fire, versus during Abandon Ship?", "options": ["Fire: the Bridge, in command of firefighting. Abandon Ship: the 3rd Liferaft, in charge of it", "Fire and Abandon Ship: always the Bridge", "Fire: the 3rd Liferaft. Abandon Ship: the Bridge", "The Master has no fixed emergency station"], "correct": 0, "exp": "The guide's example states the Master reports to the Bridge during a fire (in command of firefighting), and to the 3rd Liferaft during Abandon Ship, in charge of that raft."}, {"q": "Why does the guide say fire is the most hazardous emergency a ship can face?", "options": ["Left unchecked, it can consume the entire crew and vessel very quickly", "It is the least predictable of all emergencies", "It only threatens cargo, not crew", "It cannot be fought using shipboard equipment"], "correct": 0, "exp": "The guide states fire is the most hazardous emergency because, left unchecked, it can consume the entire crew and vessel very quickly."}, {"q": "How often, at minimum, must the Master conduct a fire and boat drill according to 46 CFR Subchapter 'I', per the guide?", "options": ["At least once each week", "At least once each month", "At least once each voyage", "Only once per year"], "correct": 0, "exp": "The guide states the Master is responsible for conducting a fire and boat drill at least once each week."}, {"q": "Per the guide, within how many hours of leaving a port must a fire and boat drill be held, if more than 25% of the crew was replaced at that port?", "options": ["Within 24 hours", "Within 72 hours", "Within 1 hour", "Within 7 days"], "correct": 0, "exp": "The guide states at least one fire and boat drill must be held within 24 hours of leaving a port if more than 25% of the crew were replaced at that port."}, {"q": "Which of the following is NOT one of the fire and boat drill requirements listed in the guide?", "options": ["Fire pumps must be started", "The drill must be conducted as if an actual emergency existed", "All watertight doors in use must be closed while underway", "The vessel must return to port before conducting the drill"], "correct": 3, "exp": "The guide lists starting fire pumps, conducting the drill as if it were a real emergency, and closing watertight doors in use while underway \u2014 not returning to port, which is not a requirement."}, {"q": "What SOLAS regulation mandates the Fire Control Plan, per the guide?", "options": ["Regulation 15 of Chapter II", "Regulation 1 of Chapter I", "Regulation 30 of Chapter V", "There is no SOLAS regulation for this"], "correct": 0, "exp": "The guide states the Fire Control Plan is a mandatory requirement of the SOLAS convention described in Regulation 15 of Chapter II."}, {"q": "What information does the guide say the Fire Control Plan provides?", "options": ["Fire stations on each deck, fire detection/firefighting systems, alarm systems, and means of escape", "Only the ship's cargo manifest", "Crew payroll and scheduling information", "Only weather routing information"], "correct": 0, "exp": "The guide states the Fire Control Plan provides information about fire stations on each deck, detection and firefighting systems, alarm systems, sprinklers, extinguishing appliances, and means of escape."}, {"q": "According to the guide, what must every crew member do when the fire or emergency signal sounds?", "options": ["Respond and perform their respective role per the Station Bill, working together", "Only officers are required to respond", "Wait for individual verbal instructions before moving", "Proceed directly to the lifeboats regardless of emergency type"], "correct": 0, "exp": "The guide states every crew member must respond and perform their respective role, working together, whenever any of these emergency signals sound."}, {"q": "Per the guide, who must be immediately notified as soon as a person-in-charge of a vessel knows of any oil discharge?", "options": ["The Coast Guard", "The vessel's insurance company only", "The nearest port authority only, not the Coast Guard", "No immediate notification is required by law"], "correct": 0, "exp": "The guide states the person-in-charge of a vessel shall immediately notify the Coast Guard as soon as he knows of any oil discharged from that vessel."}, {"q": "Per the guide, what is the penalty for failing to immediately notify the Coast Guard of an oil discharge?", "options": ["A fine of $25,000 or 5 years in jail, or both", "A warning letter only, with no fine", "Automatic loss of the vessel's registration", "A flat $500 fine regardless of circumstances"], "correct": 0, "exp": "The guide states failure to notify the Coast Guard immediately can lead to, upon conviction, a fine of $25,000 or 5 years in jail or both."}, {"q": "Per the guide, what is the maximum penalty that can be assessed against a company for an oil discharge itself (separate from failure to report)?", "options": ["Up to $5,000 for each offense", "Up to $500,000 for each offense", "There is no penalty for the company, only the individual", "A mandatory shutdown of vessel operations"], "correct": 0, "exp": "The guide states the company can be assessed a penalty for the discharge of up to $5,000 for each offense, while the fine for not reporting a discharge is $10,000."}, {"q": "Per the guide, what is the fine specifically for NOT reporting a discharge, as distinct from the discharge penalty itself?", "options": ["$10,000", "$5,000", "$25,000", "$1,000"], "correct": 0, "exp": "The guide states the fine for not reporting a discharge is $10,000, distinct from the up-to-$5,000 penalty for the discharge itself."}, {"q": "What information should be reported to the Coast Guard after an oil discharge, per the guide?", "options": ["Your name, company name, location, type and amount of oil, weather, tide, sea conditions, and cause", "Only the vessel's registration number", "Only the estimated cost of cleanup", "Nothing further is needed after the initial call"], "correct": 0, "exp": "The guide lists reporting your name, the company name, where the discharge occurred, the type and approximate amount of oil, plus weather, tide, sea conditions, and the cause."}, {"q": "What is the most common type of oil containment device mentioned in the guide?", "options": ["A boom", "A skimmer", "A sorbent pad", "A dispersant tank"], "correct": 0, "exp": "The guide states the most common type of oil containment device is the boom, a floating fence used to surround spilled oil."}, {"q": "What method does the guide describe for removing oil from the water surface using a boat that picks up the top layer?", "options": ["A skimmer boat", "A dredging barge", "A sorbent trawler", "A containment tug"], "correct": 0, "exp": "The guide states a skimmer boat skims the oil from the water surface by picking up the top layer of spilled oil."}, {"q": "What are sorbents, per the guide?", "options": ["Materials like straw or sawdust spread on the water to soak up spilled oil", "Chemical agents that sink oil to the seafloor", "Devices used only to contain, not absorb, oil", "A type of boom made of steel"], "correct": 0, "exp": "The guide states sorbents (straw, sawdust, or similar materials) are spread on the water's surface to soak up spilled oil."}, {"q": "Why does the guide say sinking or dispersing agents are not generally allowed in the United States?", "options": ["Dispersed or sunken oil is more harmful to sea life than oil on the surface, and surface oil can be cleaned up while sunken oil cannot", "They are more expensive than booms", "They are illegal worldwide, not just in the US", "They work too quickly, leaving no time to document the spill"], "correct": 0, "exp": "The guide explains sinking/dispersing agents are avoided because dispersed or sunken oil is more harmful to sea life, and surface oil can be cleaned up while sunken or dispersed oil cannot."}, {"q": "What historic spill led to the passage of the Oil Pollution Act of 1990 (OPA-90), per the guide?", "options": ["The Exxon Valdez incident", "The Deepwater Horizon incident", "The Torrey Canyon incident", "The Amoco Cadiz incident"], "correct": 0, "exp": "The guide states OPA-90 was passed by the US after the Exxon Valdez incident."}, {"q": "Which two agencies does the guide say have primary responsibility for implementing OPA-90 regulations?", "options": ["The Coast Guard and the Environmental Protection Agency (EPA)", "The IMO and the United Nations", "NOAA and the Department of Transportation", "The Navy and the Department of Homeland Security"], "correct": 0, "exp": "The guide states the primary responsibility for implementing OPA-90 regulations goes to the Coast Guard and the EPA."}, {"q": "What does MARPOL stand for, per the guide?", "options": ["International Convention to Prevent Pollution of the Marine Environment from Ships", "Marine Pollution Regulatory Organization", "Maritime Protocol on Ocean Litter", "Marine Authority for the Regulation of Petroleum and Oil Loss"], "correct": 0, "exp": "The guide defines MARPOL as the International Convention to Prevent Pollution of the Marine Environment from Ships."}, {"q": "Which MARPOL Annex covers Regulations for the Prevention of Pollution by Oil, per the guide?", "options": ["Annex I", "Annex IV", "Annex V", "Annex II"], "correct": 0, "exp": "The guide states Annex I covers Regulations for the Prevention of Pollution by Oil."}, {"q": "Which MARPOL Annex covers Prevention of Pollution by Sewage from Ships, per the guide?", "options": ["Annex IV", "Annex I", "Annex V", "Annex III"], "correct": 0, "exp": "The guide states Annex IV covers Prevention of Pollution by Sewage from Ships."}, {"q": "Which MARPOL Annex covers Prevention of Pollution by Garbage from Ships, per the guide?", "options": ["Annex V", "Annex I", "Annex IV", "Annex II"], "correct": 0, "exp": "The guide states Annex V covers Prevention of Pollution by Garbage from Ships."}, {"q": "Per the guide's discussion of Annex I, discharge of oil or oily mixture from an oil tanker is prohibited within how many miles of the nearest land?", "options": ["50 miles", "12 miles", "200 miles", "3 miles"], "correct": 0, "exp": "The guide states Annex I imposes a total prohibition on discharge of oil or oily mixture from an oil tanker within 50 miles of the nearest land, and in certain special areas."}, {"q": "Per the guide, discharge of treated sewage into the sea is prohibited unless the vessel is beyond how many nautical miles from shore?", "options": ["12 nautical miles", "3 nautical miles", "50 nautical miles", "200 nautical miles"], "correct": 0, "exp": "The guide states the discharge of sewage into the sea is prohibited except when it has been treated aboard AND the vessel is over 12 nautical miles from shore."}, {"q": "Per the guide, every ship of what minimum length must display MARPOL Annex V placards about garbage disposal?", "options": ["12 meters (40 feet) or more", "24 meters (79 feet) or more", "100 meters (328 feet) or more", "There is no minimum length requirement"], "correct": 0, "exp": "The guide states every ship of 12 meters (40 feet) or more in length must display placards notifying passengers and crew of garbage disposal requirements."}, {"q": "Per the guide, what materials can NEVER be dumped overboard at any time?", "options": ["Plastics and any substance that creates a film or sheen on the water (fuel, oil, paint)", "Food waste only", "Only glass and metal", "Nothing is prohibited if the ship is more than 3 miles from shore"], "correct": 0, "exp": "The guide states plastics (including packing materials, Styrofoam) and substances that create a film or sheen on the water (fuel, oil, paint) can never be dumped overboard at any time."}, {"q": "Per the guide, who is ultimately responsible for the navigation, operating management, and safety of the vessel and all persons aboard?", "options": ["The Captain/Master", "The Chief Mate", "The Chief Engineer", "The AB (Able Bodied Seaman)"], "correct": 0, "exp": "The guide states the Captain/Master is ultimately responsible for navigation, operating management, care and safety of the vessel, and the safety and wellbeing of the crew and all persons aboard."}, {"q": "Per the guide's chain of command, who has all unlicensed personnel under his/her command, carrying out the Master's orders?", "options": ["The Chief Mate/Mate", "The Chief Engineer", "The AB", "The QMED"], "correct": 0, "exp": "The guide states the Chief Mate/Mate is responsible for carrying out the orders and instructions of the Captain/Master, and all unlicensed personnel are under his/her command."}, {"q": "Per the guide, who is responsible for all machinery including fuel tanks, water tanks, and piping on the vessel?", "options": ["The Chief Engineer/Engineer", "The Chief Mate", "The AB", "The OS (Wiper)"], "correct": 0, "exp": "The guide states the Chief Engineer/Engineer is responsible for all machinery including fuel tanks, water tanks, and piping."}, {"q": "What does QMED stand for, per the guide?", "options": ["Qualified Member of the Engine Department", "Quarters Maintenance and Engineering Duty", "Quality Marine Equipment Diagnostic", "Qualified Marine Emergency Director"], "correct": 0, "exp": "The guide defines QMED as Qualified Member of the Engine Department, an experienced engineering position."}, {"q": "Per the guide, what kind of position is OS (Ordinary Seaman/Deckhand)?", "options": ["An entry-level position, which may or may not require prior vessel experience", "A licensed officer position requiring a captain's license", "The most senior deck position aboard", "A position that only exists in the engine department"], "correct": 0, "exp": "The guide describes OS (Ordinary Seaman/Deckhand) as an entry-level position, which the person may or may not have prior vessel experience for."}, {"q": "What is JSA, per the guide?", "options": ["Job Safety Analysis \u2014 a process to determine hazards and safe procedures for each step of a job", "Journey Safety Assessment \u2014 a route-planning tool for navigation", "Joint Ship Agreement \u2014 a labor contract document", "Just-in-time Safety Audit \u2014 an annual inspection"], "correct": 0, "exp": "The guide defines JSA as Job Safety Analysis, a process used to determine hazards of and safe procedures for each step of a job."}, {"q": "Which of the following is NOT one of the four basic steps of a JSA, per the guide?", "options": ["Select a job to be analyzed; separate it into basic steps; identify hazards; devise controls", "File a formal report with the Coast Guard for every job performed", "Identify the hazards associated with each step", "Devise controls for each hazard"], "correct": 1, "exp": "The guide's four JSA steps are: select a job to be analyzed, separate the job into its basic steps, identify hazards associated with each step, and devise controls for each hazard. Filing a Coast Guard report is not one of them."}, {"q": "Per the guide, are JSAs static, one-time documents?", "options": ["No \u2014 they should be reviewed and revised as conditions change", "Yes \u2014 once written they are never changed", "Yes, but only the Master may revise them", "JSAs are optional and rarely used"], "correct": 0, "exp": "The guide explicitly states JSA's are not static tools, and should be reviewed and revised as conditions change."}, {"q": "What does ANSI stand for, per the guide, regarding PPE standards?", "options": ["American National Standards Institute", "Association of National Safety Inspectors", "American Nautical Safety Institute", "Agency for National Shipboard Inspection"], "correct": 0, "exp": "The guide defines ANSI as the American National Standards Institute, the organization that develops design and manufacturing standards for most PPE."}, {"q": "Per the guide, what ANSI standard must a hard hat meet, with the stamp inside the hat?", "options": ["ANSI Z-89.1", "ANSI Z-87.1", "ANSI Z-41.1", "ANSI Z-10.1"], "correct": 0, "exp": "The guide states the hard hat must meet the ANSI Z-89.1 standard, stamped inside the hat."}, {"q": "Per the guide, what ANSI standard must eye and face protection meet?", "options": ["ANSI Z-87.1", "ANSI Z-89.1", "ANSI Z-41.1", "ANSI Z-22.1"], "correct": 0, "exp": "The guide states eye and face protection must meet the ANSI Z-87.1 standard."}, {"q": "Per the guide, what ANSI standard must safety footwear meet?", "options": ["ANSI Z-41.1", "ANSI Z-89.1", "ANSI Z-87.1", "ANSI Z-15.1"], "correct": 0, "exp": "The guide states all safety footwear must meet the ANSI Z-41.1 standard."}, {"q": "Per the guide, what type of PFD is described as an 'Offshore Life Jacket,' used in cases of emergency such as abandon ship?", "options": ["Type I", "Type II", "Type IV", "Type V"], "correct": 0, "exp": "The guide describes Type I as the Offshore Life Jacket, used in emergencies such as abandon ship, and designed to turn an unconscious person face up."}, {"q": "Per the guide, what type of PFD is a 'Throwable Device \u2014 Life Ring Buoy,' most often used for response?", "options": ["Type IV", "Type I", "Type III", "Type V"], "correct": 0, "exp": "The guide describes Type IV as the Throwable Device (Life Ring Buoy), most often used for response, sometimes with a water-activated light or smoke canister."}, {"q": "Per the guide, what type of PFD is described as a 'Special Use Device \u2014 Work Vest,' most often also considered a PPE item?", "options": ["Type V", "Type I", "Type IV", "Type II"], "correct": 0, "exp": "The guide describes Type V as the Special Use Device (Work Vest), most often also a PPE item, used when working on deck and/or over water, and must be supervised."}, {"q": "Per the guide, what oxygen level defines an 'oxygen deficient atmosphere,' a hazard of confined spaces?", "options": ["Less than 19.5%", "Less than 15%", "Less than 25%", "Less than 10%"], "correct": 0, "exp": "The guide states an oxygen deficient atmosphere has an oxygen level of less than 19.5%."}, {"q": "Per the guide, what must happen before entering a confined space?", "options": ["It must be tested by a competent person or chemist who completes and posts a safe entry permit", "Only a verbal go-ahead from any crew member is needed", "Confined spaces do not require any testing if ventilation fans are running", "Only the Master may personally test the space"], "correct": 0, "exp": "The guide states prior to entering a confined space, it must be tested by a competent person or chemist who completes and posts a safe entry permit."}, {"q": "Which of these is listed by the guide as an example of a confined space?", "options": ["A ballast tank", "The bridge", "The galley", "An open weather deck"], "correct": 0, "exp": "The guide lists bulk, ballast, and void tanks, the rudder compartment, and the chain locker as examples of confined spaces."}, {"q": "Per the guide, what is the correct proper lifting technique to help avoid back injury?", "options": ["Bend the knees, keep the back straight, get a firm grip, bring the object close to the body, and straighten the legs with feet shoulder-width apart", "Bend at the waist and keep the legs straight for better leverage", "Twist at the waist while lifting to distribute the load evenly", "Lift as quickly as possible to minimize time under strain"], "correct": 0, "exp": "The guide's proper lifting technique includes bending the knees, keeping the back straight, getting a firm grip, bringing the object close to the body, and straightening the legs with feet shoulder-width apart \u2014 and walking in straight lines without twisting."}, {"q": "What do lock-out/tag-out procedures prevent, per the guide?", "options": ["The accidental start-up or operation of machinery or equipment", "Unauthorized personnel from entering the bridge", "Cargo from shifting during heavy weather", "Fires from spreading between compartments"], "correct": 0, "exp": "The guide states lock-out/tag-out procedures prevent the accidental start-up or operation of machinery or equipment."}, {"q": "Per the guide, who may remove a lock-out/tag-out device?", "options": ["Only the employee who applied it, or supervisors in special limited circumstances after ensuring all personnel are clear", "Any crew member who happens to be nearby", "Only the Chief Engineer, regardless of who applied it", "Lock-out/tag-out devices are never removed, only replaced"], "correct": 0, "exp": "The guide states lock-out/tag-outs are to be removed only by the employee who applied them, or by supervisors in special limited circumstances after ensuring all personnel are clear."}, {"q": "Per the guide, what should you do \u2014 or avoid doing \u2014 with a line under strain?", "options": ["Stand well clear of it and never straddle or step on it", "Stand as close as possible to monitor tension", "Step on it briefly to hold it in place", "Wrap it around your hand for a better grip"], "correct": 0, "exp": "The guide's safe line handling procedures include standing well clear of lines under strain, watching for recoil, and never straddling or stepping on a line."}, {"q": "Per the guide's cited studies, what percentage of communicated information is conveyed through words alone?", "options": ["7 percent", "55 percent", "38 percent", "93 percent"], "correct": 0, "exp": "The guide states studies have shown words account for 7 percent of the information communicated."}, {"q": "Per the guide, what percentage of communicated information is conveyed through vocal tone?", "options": ["55 percent", "7 percent", "38 percent", "20 percent"], "correct": 0, "exp": "The guide states vocal tone accounts for 55 percent of the information communicated."}, {"q": "Per the guide, what percentage of communicated information is conveyed through body language?", "options": ["38 percent", "7 percent", "55 percent", "50 percent"], "correct": 0, "exp": "The guide states body language accounts for 38 percent of the information communicated."}, {"q": "Which of the following is listed by the guide as an effective communication behavior for teams?", "options": ["Acknowledge ('Roger') communications and repeat as necessary", "Assume the receiver understood without confirmation", "Use informal or made-up terminology to keep things casual", "Avoid clarifying questions to save time"], "correct": 0, "exp": "The guide lists acknowledging communications, repeating as necessary, using standard terminology, and requesting clarification as effective communication behaviors."}, {"q": "Which of these is listed in the guide as a barrier to effective communication?", "options": ["Non-assertive behavior", "Using standard terminology", "Requesting clarification", "Acknowledging messages"], "correct": 0, "exp": "The guide lists non-assertive behavior, task-preoccupation, anger or frustration, personal bias, and others as barriers to communication."}, {"q": "Per the guide, what is 'parroting' in the context of message feedback?", "options": ["Repeating back verbatim the words of the speaker", "Summarizing the message in your own words", "Ignoring the message and moving on", "Writing the message down for later review"], "correct": 0, "exp": "The guide defines parroting as repeating back verbatim the words of the speaker, confirming the words transmitted were the words received."}, {"q": "Per the guide, does simple acknowledgment ('Rogering') a message ensure the receiver understood it?", "options": ["No \u2014 for critical or complicated information, acknowledgment alone is normally insufficient", "Yes \u2014 acknowledgment always confirms full understanding", "Acknowledgment is only used for casual, non-critical messages", "Acknowledgment is never appropriate aboard ship"], "correct": 0, "exp": "The guide states that while acknowledging a message is common courtesy, for critical information or complicated ideas, acknowledgment normally is insufficient to ensure understanding."}, {"q": "Per the guide, what should the sender do to help prevent miscommunication?", "options": ["State one idea at a time, repeat if appropriate, and encourage feedback", "Deliver all information at once to save time", "Avoid repeating anything, as it wastes time", "Assume the receiver will ask if something is unclear"], "correct": 0, "exp": "The guide states the sender should state one idea at a time, repeat if appropriate, and encourage feedback to prevent miscommunication."}, {"q": "Per the guide, what is the effective team's approach to separating personal dynamics from problem-solving?", "options": ["Being 'easy on people, hard on problems'", "Being hard on both people and problems equally", "Avoiding all criticism of ideas, even when needed", "Focusing solely on individual performance, not team dynamics"], "correct": 0, "exp": "The guide states the effective team understands and practices the distinction of being 'easy on people, hard on problems.'"}, {"q": "Per the guide, what should conflict resolution focus on, rather than placing blame?", "options": ["Gathering information and focusing on what the issues are, not who did what", "Determining who is at fault as quickly as possible", "Escalating directly to the Coast Guard", "Avoiding any discussion of the conflict entirely"], "correct": 0, "exp": "The guide states conflict resolution should gather information, identify key issues without making accusations, and focus on what the issues are, not who did what."}, {"q": "Per the guide, under whose guidance should conflicting parties work cooperatively to resolve an issue?", "options": ["A ship's officer or the Chief Mate", "A random crew member with no rank preference", "Only the Master, with no other officer authorized", "An outside third-party mediator only"], "correct": 0, "exp": "The guide states resolving conflict involves coming together voluntarily to work cooperatively on the issues, under the guidance of a ship's officer or the Chief Mate."}, {"q": "Per the guide's list on treatment of others, what should you do with a coworker's idea that you use to improve work?", "options": ["Let them know you used their idea, or encourage them to implement it themselves", "Use it without mentioning where it came from", "Only credit ideas that come from officers", "Avoid using coworkers' ideas altogether"], "correct": 0, "exp": "The guide states you should use people's ideas to change or improve work, and let employees know you used their idea, or better yet, encourage the person with the idea to implement it."}, {"q": "Per the guide, if you believe you have been discriminated against due to race, religion, or similar protected status, who should you contact?", "options": ["The Chief Mate, Master, or your employer's human resource department", "Only a private attorney, with no shipboard reporting option", "No one \u2014 such issues are not addressed aboard ship", "Only the Coast Guard directly, bypassing the company"], "correct": 0, "exp": "The guide states if you believe you have been discriminated against, you should contact the Chief Mate, Master, or your employer's human resource department."}, {"q": "Per the guide, what is a 'grievance,' as defined by law?", "options": ["Any complaint by a union or employee about a matter relating to employment or violation of a labor agreement, rule, or regulation", "Only a formal lawsuit filed in court", "An informal complaint that carries no legal standing", "A complaint that can only be filed by the Master"], "correct": 0, "exp": "The guide defines a grievance as any complaint, by a labor organization or employee, about any matter relating to the employment of the employee or the interpretation, breach, misinterpretation, or misapplication of any law, rule, or regulation affecting employment conditions."}, {"q": "Per the guide, at what minimum annual rate must marine employers randomly drug and alcohol test crewmembers?", "options": ["Greater than or equal to 50 percent", "Greater than or equal to 10 percent", "Exactly 25 percent", "There is no minimum rate specified"], "correct": 0, "exp": "The guide states each marine employer is required to test crewmembers on a random basis at an annual rate of greater than or equal to 50 percent."}, {"q": "Which of the following is listed by the guide as a required characteristic of random drug/alcohol testing?", "options": ["All crewmembers have an equal chance of selection, and the testing dates must be random and unpredictable", "Testing dates should follow a predictable schedule, such as every payday", "Only new hires are subject to random testing, not existing crew", "Employees may choose which testing period they participate in"], "correct": 0, "exp": "The guide states random testing requires all crewmembers to have an equal chance of selection, with testing dates that are truly random and not predictable, such as picking names every payday, which the guide explicitly says is NOT acceptable."}, {"q": "Which of the following is NOT one of the types of drug/alcohol testing listed in the guide?", "options": ["Weekly Mandatory Testing", "Random Testing", "Post-Accident Testing or Unsafe Practice", "Reasonable Suspicion Testing"], "correct": 0, "exp": "The guide lists Random Testing, Applicant Testing, Reasonable Suspicion Testing, Follow-up Testing, and Post-Accident Testing or Unsafe Practice as the testing types \u2014 'Weekly Mandatory Testing' is not one of them."}, {"q": "Per the guide, what is 'crew endurance' a function of?", "options": ["Operational risk factors, including psychological state, physical conditioning, sleep quality, diet, and the internal biological clock", "Only the number of years of experience a crew member has", "The size of the vessel alone", "The number of crew members assigned to a watch, regardless of other factors"], "correct": 0, "exp": "The guide defines crew endurance as a function of operational risk factors, including psychological state, physical conditioning, motion discomfort threshold, sleep quality/duration, diet, and the stability of the internal biological clock."}, {"q": "Per the guide, what is the 'Red Zone' in the context of managing fatigue?", "options": ["The daily period of lowest energy", "The period of highest alertness during the day", "A restricted area of the vessel during emergencies", "The time period reserved for mandatory drills"], "correct": 0, "exp": "The guide defines the Red Zone as the daily period of lowest energy for crewmembers."}, {"q": "For crewmembers accustomed to sleeping at night, per the guide, during what approximate window does energy typically reach its daily low?", "options": ["Approximately 0300 to 0500", "Approximately 1000 to 1200", "Approximately 1300 to 1600", "Approximately 1800 to 2000"], "correct": 0, "exp": "The guide states energy reaches a daily low in the early morning hours, approximately between 0300 to 0500, for crewmembers accustomed to sleeping at night."}, {"q": "Per the guide, at approximately what time does energy typically reach its first daily peak, for a typical night-sleeper?", "options": ["Near mid-morning (around 1000)", "Near midnight (around 0000)", "In the early afternoon (around 1400)", "Immediately upon waking"], "correct": 0, "exp": "The guide states energy and alertness increase steadily through the early morning hours and reach a daily peak near mid-morning (1000)."}, {"q": "Per the guide, what physiological mechanism regulates the timing of sleep onset, wake-up, and energy availability?", "options": ["The body's biological clock", "The digestive system", "The inner ear's vestibular system", "The autonomic nervous system alone, with no separate 'clock' mechanism"], "correct": 0, "exp": "The guide describes the biological clock as a physiological mechanism composed of neural networks and hormonal outputs that regulates the timing of sleep onset, wake-up, and energy availability."}, {"q": "Per the guide, work shifts greater than how many hours within a 24-hour period tend to disrupt energy-restorative processes and degrade endurance?", "options": ["12 hours", "6 hours", "20 hours", "4 hours"], "correct": 0, "exp": "The guide states work shifts greater than 12 hours within a 24-hour period tend to disrupt energy restorative processes and degrade endurance, similar to frequent day/night shift changes."}, {"q": "Per the guide's example, if a person wakes at 0600 for five consecutive days, then sleeps in until 0830 on the weekend, what happens to their biological clock?", "options": ["It begins adjusting toward the new 0830 wake-up time, disrupting the previously set rhythm and degrading alertness", "It remains completely unaffected by weekend sleep changes", "It immediately resets and causes no disruption at all", "It only adjusts if the person also changes time zones"], "correct": 0, "exp": "The guide explains that sleeping in on the weekend sends a conflicting signal, and the biological clock will begin adjusting to the new 0830 wake-up time, disrupting the previously established rhythm and degrading alertness."}, {"q": "Per the guide, approximately how many days does the biological clock system require to fully adjust to a new sleep schedule (e.g., a wake-up time two hours later)?", "options": ["Approximately two to three days", "Approximately one hour", "Approximately two to three weeks", "The biological clock does not adjust; it must be reset manually"], "correct": 0, "exp": "The guide states the biological clock system requires approximately two to three days to fully adjust to a new sleep schedule."}, {"q": "Per the guide, what type of stress creates a constant drain on crewmember energy levels, arising from interpersonal relationships, task design, and management style?", "options": ["Chronic psychological stress", "Only physical exertion from manual labor", "Stress caused solely by weather conditions", "Stress is not addressed in relation to fatigue in the guide"], "correct": 0, "exp": "The guide states chronic psychological stress \u2014 induced by interpersonal relationships, task design, and management style \u2014 creates a constant drain on crewmember energy levels."}, {"q": "Per the guide, fatigue can impair which two things in particular, and has remained a significant factor in what according to the NTSB?", "options": ["Information processing and reaction time; a significant factor in transportation accidents", "Only physical strength, with no effect on mental processing", "Only long-term health, with no immediate performance effects", "Vision only, with no effect on cognitive processing"], "correct": 0, "exp": "The guide states fatigue can impair information processing and reaction time, and has remained a significant factor in transportation accidents according to the NTSB."}];
+
+document.getElementById('bankSizeLabel').textContent = QUESTIONS.length;
+document.getElementById('allCountBtn').textContent = QUESTIONS.length;
+
+let session = [];      // shuffled question objects for current run
+let idx = 0;
+let score = 0;
+let answered = false;
+let userAnswers = [];  // {qIndexInSession, chosen, correct}
+
+const screenSelect = document.getElementById('screen-select');
+const screenQuiz = document.getElementById('screen-quiz');
+const screenResults = document.getElementById('screen-results');
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function startSession(count){
+  const pool = shuffle(QUESTIONS);
+  session = count === 'all' ? pool : pool.slice(0, count);
+  idx = 0; score = 0; answered = false; userAnswers = [];
+  screenSelect.classList.add('hidden');
+  screenResults.classList.add('hidden');
+  screenQuiz.classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answered = false;
+  const item = session[idx];
+  document.getElementById('progressLabel').textContent = (idx+1) + ' / ' + session.length;
+  document.getElementById('progressFill').style.width = ((idx)/session.length*100) + '%';
+  document.getElementById('qText').textContent = item.q;
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('nextBtn').textContent = (idx === session.length-1) ? 'See Results' : 'Next';
+
+  const explainBox = document.getElementById('explainBox');
+  explainBox.classList.remove('show');
+  explainBox.innerHTML = '';
+
+  const optList = document.getElementById('optList');
+  optList.innerHTML = '';
+  const letters = ['A','B','C','D'];
+
+  const optOrder = shuffle(item.options.map((text, origIdx) => ({text, origIdx})));
+
+  optOrder.forEach((opt, displayIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = '<span class="opt-letter">'+letters[displayIdx]+'</span><span>'+opt.text+'</span>';
+    btn.addEventListener('click', () => selectOption(opt.origIdx, btn, optList, item));
+    optList.appendChild(btn);
+  });
+}
+
+function selectOption(chosenOrigIdx, btnEl, optList, item){
+  if(answered) return;
+  answered = true;
+  const isCorrect = chosenOrigIdx === item.correct;
+  if(isCorrect) score++;
+
+  userAnswers.push({
+    q: item.q,
+    options: item.options,
+    correct: item.correct,
+    chosen: chosenOrigIdx,
+    isCorrect: isCorrect,
+    exp: item.exp
+  });
+
+  Array.from(optList.children).forEach(child => {
+    child.disabled = true;
+  });
+
+  // mark all buttons based on their origIdx stored via matching text
+  Array.from(optList.children).forEach(child => {
+    const text = child.querySelector('span:last-child').textContent;
+    const thisOrigIdx = item.options.indexOf(text);
+    if(thisOrigIdx === item.correct){
+      child.classList.add('correct');
+    } else if(thisOrigIdx === chosenOrigIdx){
+      child.classList.add('incorrect');
+    } else {
+      child.classList.add('dim');
+    }
+  });
+
+  const explainBox = document.getElementById('explainBox');
+  explainBox.innerHTML = '<b>' + (isCorrect ? 'Correct. ' : 'Not quite. ') + '</b>' + item.exp;
+  explainBox.classList.add('show');
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  idx++;
+  if(idx >= session.length){
+    showResults();
+  } else {
+    renderQuestion();
+  }
+});
+
+function showResults(){
+  document.getElementById('progressFill').style.width = '100%';
+  screenQuiz.classList.add('hidden');
+  screenResults.classList.remove('hidden');
+
+  document.getElementById('scoreNum').innerHTML = score + '<span>/' + session.length + '</span>';
+  const pct = Math.round((score/session.length)*100);
+  let msg;
+  if(pct === 100) msg = "Perfect run. You know this material cold.";
+  else if(pct >= 85) msg = "Strong result — review the misses below, then you're set.";
+  else if(pct >= 70) msg = "Solid, but a few gaps to close before the exam.";
+  else msg = "Worth another pass through the guide — review the misses below.";
+  document.getElementById('scoreMsg').textContent = pct + '% — ' + msg;
+
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = '';
+  const misses = userAnswers.filter(a => !a.isCorrect);
+  if(misses.length === 0){
+    reviewList.innerHTML = '<p style="text-align:center;color:#555;font-size:14px;">No misses to review — nice work.</p>';
+  } else {
+    const heading = document.createElement('p');
+    heading.style.cssText = 'font-family:"Oswald","Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:0.05em;font-size:13px;color:#7c7460;margin-bottom:8px;';
+    heading.textContent = 'Review — ' + misses.length + ' missed';
+    reviewList.appendChild(heading);
+    misses.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'review-item';
+      div.innerHTML =
+        '<span class="review-tag tag-wrong">Missed</span>' +
+        '<p class="review-q">' + m.q + '</p>' +
+        '<p class="review-answer">Your answer: ' + m.options[m.chosen] + '</p>' +
+        '<p class="review-answer">Correct answer: ' + m.options[m.correct] + '</p>' +
+        '<p class="review-exp">' + m.exp + '</p>';
+      reviewList.appendChild(div);
+    });
+  }
+}
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const c = btn.getAttribute('data-count');
+    startSession(c === 'all' ? 'all' : parseInt(c,10));
+  });
+});
+
+document.getElementById('retakeBtn').addEventListener('click', () => {
+  startSession(session.length === QUESTIONS.length ? 'all' : session.length);
+});
+document.getElementById('menuBtn').addEventListener('click', () => {
+  screenResults.classList.add('hidden');
+  screenSelect.classList.remove('hidden');
+});
+</script>
+</body>
+</html>
