@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VPDSD Practice Quiz</title>
+<style>
+  :root{
+    --navy:#0B2A45;
+    --navy-deep:#071B30;
+    --plate:#F1ECDD;
+    --plate-line:#C9BFA0;
+    --orange:#E2541F;
+    --orange-deep:#B8400F;
+    --steel:#4A6C8C;
+    --good:#1F7A54;
+    --bad:#B4322A;
+    --ink:#182430;
+    --paper:#FAF7EF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(74,108,140,0.18), transparent 45%),
+      var(--navy-deep);
+    color:var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", Arial, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:760px;
+  }
+
+  /* ---------- Header: stenciled lifeboat capacity plate ---------- */
+  .plate{
+    background: var(--plate);
+    border:3px solid var(--navy);
+    border-radius:6px;
+    padding:22px 24px 18px;
+    position:relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    margin-bottom:22px;
+  }
+  .plate::before{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border:1px dashed var(--plate-line);
+    border-radius:3px;
+    pointer-events:none;
+  }
+  .plate-eyebrow{
+    font-family: "Oswald", "Arial Narrow", sans-serif;
+    letter-spacing:0.22em;
+    font-size:12px;
+    color:var(--steel);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  .plate-title{
+    font-family: "Oswald", "Arial Narrow", sans-serif;
+    font-weight:600;
+    font-size:clamp(26px,5vw,36px);
+    letter-spacing:0.03em;
+    color:var(--navy);
+    text-transform:uppercase;
+    margin:0;
+    line-height:1.05;
+  }
+  .plate-sub{
+    margin:8px 0 0;
+    font-size:13px;
+    color:var(--ink);
+    opacity:0.75;
+  }
+  .plate-stencil-row{
+    display:flex;
+    gap:18px;
+    margin-top:14px;
+    flex-wrap:wrap;
+    font-family: "Oswald","Arial Narrow",sans-serif;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--steel);
+  }
+  .plate-stencil-row span b{ color:var(--navy); }
+
+  /* ---------- Cards / surfaces ---------- */
+  .card{
+    background:var(--paper);
+    border-radius:6px;
+    padding:26px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+  }
+
+  /* ---------- Mode select screen ---------- */
+  .mode-grid{
+    display:grid;
+    gap:14px;
+  }
+  .mode-btn{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    width:100%;
+    text-align:left;
+    background:#fff;
+    border:2px solid #E4DEC9;
+    border-radius:8px;
+    padding:16px 18px;
+    cursor:pointer;
+    transition:border-color .15s ease, transform .1s ease;
+    font-family:inherit;
+  }
+  .mode-btn:hover{ border-color:var(--orange); transform:translateY(-1px); }
+  .mode-btn:focus-visible{ outline:3px solid var(--orange); outline-offset:2px; }
+  .mode-name{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:18px;
+    letter-spacing:0.02em;
+    color:var(--navy);
+    text-transform:uppercase;
+    margin:0 0 4px;
+  }
+  .mode-desc{ margin:0; font-size:13.5px; color:#555; }
+  .mode-count{
+    flex-shrink:0;
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:26px;
+    color:var(--orange);
+    border:2px solid var(--orange);
+    border-radius:50%;
+    width:56px; height:56px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .bank-note{
+    margin-top:16px;
+    font-size:12.5px;
+    color:#7c7460;
+    text-align:center;
+  }
+
+  /* ---------- Quiz screen ---------- */
+  .progress-wrap{
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:18px;
+  }
+  .progress-track{
+    flex:1; height:10px; background:#E4DEC9; border-radius:6px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; background:linear-gradient(90deg,var(--steel),var(--orange));
+    width:0%; transition:width .25s ease;
+  }
+  .progress-label{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:13px; color:var(--navy); white-space:nowrap;
+  }
+  .q-text{
+    font-size:18px;
+    line-height:1.4;
+    color:var(--ink);
+    margin:0 0 20px;
+    font-weight:600;
+  }
+  .opt-list{ display:grid; gap:10px; margin-bottom:6px; }
+  .opt-btn{
+    display:flex; align-items:flex-start; gap:12px;
+    text-align:left;
+    background:#fff;
+    border:2px solid #E4DEC9;
+    border-radius:8px;
+    padding:13px 15px;
+    font-size:14.5px;
+    line-height:1.4;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--ink);
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .opt-btn:hover:not(:disabled){ border-color:var(--steel); }
+  .opt-btn:focus-visible{ outline:3px solid var(--orange); outline-offset:1px; }
+  .opt-letter{
+    flex-shrink:0;
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:13px;
+    width:24px;height:24px;border-radius:50%;
+    border:2px solid #C9BFA0;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--steel);
+  }
+  .opt-btn.correct{ border-color:var(--good); background:#EAF6EF; }
+  .opt-btn.correct .opt-letter{ border-color:var(--good); background:var(--good); color:#fff; }
+  .opt-btn.incorrect{ border-color:var(--bad); background:#FBEBEA; }
+  .opt-btn.incorrect .opt-letter{ border-color:var(--bad); background:var(--bad); color:#fff; }
+  .opt-btn:disabled{ cursor:default; }
+  .opt-btn.dim{ opacity:0.55; }
+
+  .explain{
+    display:none;
+    margin-top:16px;
+    padding:14px 16px;
+    border-left:4px solid var(--steel);
+    background:#EEF2F6;
+    border-radius:4px;
+    font-size:14px;
+    line-height:1.5;
+  }
+  .explain.show{ display:block; }
+  .explain b{ color:var(--navy); }
+
+  .nav-row{
+    display:flex; justify-content:flex-end; margin-top:20px;
+  }
+  .btn-primary{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    padding:12px 26px;
+    font-size:14px;
+    cursor:pointer;
+    transition:background .12s ease;
+  }
+  .btn-primary:hover{ background:var(--orange-deep); }
+  .btn-primary:disabled{ background:#D8CFB8; cursor:not-allowed; }
+  .btn-secondary{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    background:transparent;
+    color:var(--navy);
+    border:2px solid var(--navy);
+    border-radius:6px;
+    padding:10px 22px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .btn-secondary:hover{ background:var(--navy); color:#fff; }
+
+  /* ---------- Results screen ---------- */
+  .score-hero{
+    text-align:center;
+    padding:10px 0 22px;
+    border-bottom:1px dashed var(--plate-line);
+    margin-bottom:20px;
+  }
+  .score-num{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:64px;
+    color:var(--navy);
+    line-height:1;
+    margin:0;
+  }
+  .score-num span{ font-size:28px; color:var(--steel); }
+  .score-msg{ margin:8px 0 0; font-size:14px; color:#555; }
+  .review-item{
+    padding:14px 0;
+    border-bottom:1px solid #EDE7D6;
+  }
+  .review-item:last-child{ border-bottom:none; }
+  .review-q{ font-weight:600; font-size:14.5px; margin:0 0 6px; }
+  .review-tag{
+    display:inline-block;
+    font-family:"Oswald","Arial Narrow",sans-serif;
+    font-size:10.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border-radius:3px;
+    margin-bottom:6px;
+  }
+  .tag-correct{ background:#EAF6EF; color:var(--good); }
+  .tag-wrong{ background:#FBEBEA; color:var(--bad); }
+  .review-answer{ font-size:13.5px; color:#444; margin:2px 0; }
+  .review-exp{ font-size:13px; color:#666; margin-top:4px; }
+  .results-actions{
+    display:flex; gap:10px; justify-content:center; margin-top:24px; flex-wrap:wrap;
+  }
+  .hidden{ display:none !important; }
+
+  footer.credit{
+    text-align:center; color:#6b7f95; font-size:11.5px; margin-top:18px; letter-spacing:0.02em;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="plate">
+    <p class="plate-eyebrow">Vessel Personnel with Designated Security Duties</p>
+    <h1 class="plate-title">VPDSD</h1>
+    <p class="plate-sub">Derived from the course Student Guide.</p>
+    <div class="plate-stencil-row">
+      <span>Bank size <b id="bankSizeLabel">--</b> questions</span>
+      <span>Format <b>Multiple choice</b></span>
+      <span>Scored <b>Instant feedback</b></span>
+    </div>
+  </div>
+
+  <!-- MODE SELECT -->
+  <div id="screen-select" class="card">
+    <div class="mode-grid">
+      <button class="mode-btn" data-count="10">
+        <div>
+          <p class="mode-name">Quick Drill</p>
+          <p class="mode-desc">10 random questions pulled fresh from the full bank. Good for a five-minute warm-up between watches.</p>
+        </div>
+        <div class="mode-count">10</div>
+      </button>
+      <button class="mode-btn" data-count="50">
+        <div>
+          <p class="mode-name">Half Deck</p>
+          <p class="mode-desc">50 random questions, reshuffled each run. A solid pre-exam review without covering everything.</p>
+        </div>
+        <div class="mode-count">50</div>
+      </button>
+      <button class="mode-btn" data-count="all">
+        <div>
+          <p class="mode-name">Full Muster</p>
+          <p class="mode-desc">Every question in the bank, shuffled. Use this the night before the exam.</p>
+        </div>
+        <div class="mode-count" id="allCountBtn">--</div>
+      </button>
+    </div>
+    <p class="bank-note">Each run randomly selects and reorders questions — no two attempts are the same.</p>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="card hidden">
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">1 / 10</div>
+    </div>
+    <p class="q-text" id="qText"></p>
+    <div class="opt-list" id="optList"></div>
+    <div class="explain" id="explainBox"></div>
+    <div class="nav-row">
+      <button class="btn-primary" id="nextBtn" disabled>Next</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="screen-results" class="card hidden">
+    <div class="score-hero">
+      <p class="score-num" id="scoreNum">0<span>/0</span></p>
+      <p class="score-msg" id="scoreMsg"></p>
+    </div>
+    <div id="reviewList"></div>
+    <div class="results-actions">
+      <button class="btn-secondary" id="retakeBtn">Run again (new shuffle)</button>
+      <button class="btn-primary" id="menuBtn">Back to menu</button>
+    </div>
+  </div>
+
+  <footer class="credit">For study purposes only — always defer to your instructor and official course materials.</footer>
+</div>
+
+<script>
+const QUESTIONS = [{"q": "Per 33 CFR 104.220, which of the following is item (a) on the list of required knowledge for company/vessel personnel with security duties?", "options": ["Knowledge of current security threats and patterns", "Recognition and detection of dangerous substances and devices", "Techniques used to circumvent security measures", "Crowd management and control techniques"], "correct": 0, "exp": "33 CFR 104.220(a) is knowledge of current security threats and patterns \u2014 the first item on the lettered list."}, {"q": "Per 33 CFR 104.220(b), what must security-duty personnel be able to do regarding dangerous substances and devices?", "options": ["Recognition and detection of dangerous substances and devices", "Physically disarm dangerous substances and devices", "Manufacture countermeasures against dangerous devices", "File a report only after a device has detonated"], "correct": 0, "exp": "104.220(b) requires recognition and detection of dangerous substances and devices \u2014 not disarming or handling them."}, {"q": "Per 33 CFR 104.220(c), what must personnel be able to recognize, done on a non-discriminatory basis?", "options": ["Characteristics and behavioral patterns of persons who are likely to threaten security", "The nationality of all passengers and crew", "The religious affiliation of visitors", "The criminal record of all vendors"], "correct": 0, "exp": "104.220(c) requires recognition, on a non-discriminatory basis, of characteristics and behavioral patterns of persons who are likely to threaten security \u2014 explicitly non-discriminatory, to guard against racial or ethnic profiling."}, {"q": "Per 33 CFR 104.220(d), what knowledge is required regarding how security measures can be defeated?", "options": ["Techniques used to circumvent security measures", "Techniques used to install security measures", "Techniques used to repair security equipment", "Techniques used to calibrate TWIC readers"], "correct": 0, "exp": "104.220(d) is knowledge of techniques used to circumvent security measures \u2014 understanding how bad actors might get around controls."}, {"q": "Per 33 CFR 104.220(e), what skill set is required for handling groups of people?", "options": ["Crowd management and control techniques", "Cargo stowage and securing techniques", "Celestial navigation techniques", "Damage control and shoring techniques"], "correct": 0, "exp": "104.220(e) requires crowd management and control techniques."}, {"q": "Per 33 CFR 104.220(f), what category of communications knowledge is required?", "options": ["Security related communications", "Only emergency medical communications", "Only communications with the company's marketing department", "Only communications conducted in writing"], "correct": 0, "exp": "104.220(f) is security related communications."}, {"q": "Per 33 CFR 104.220(g), what must personnel know regarding plans for handling emergencies?", "options": ["Knowledge of emergency procedures and contingency plans", "Knowledge of engine room emergency shutdown procedures only", "Knowledge of weather routing procedures", "Knowledge of cargo loading computer software"], "correct": 0, "exp": "104.220(g) is knowledge of emergency procedures and contingency plans."}, {"q": "Per 33 CFR 104.220(h), what must personnel be able to do with security equipment and systems?", "options": ["Operation of security equipment and systems", "Manufacture of security equipment and systems", "Sale and procurement of security equipment and systems", "Insurance underwriting for security equipment and systems"], "correct": 0, "exp": "104.220(h) is operation of security equipment and systems."}, {"q": "Per 33 CFR 104.220(i), what ongoing responsibility applies to security equipment and systems while at sea?", "options": ["Testing and calibration of security equipment and systems, and their maintenance while at sea", "Permanent decommissioning of equipment once installed", "Resale of outdated equipment to other vessels", "Design and engineering of new security equipment"], "correct": 0, "exp": "104.220(i) is testing and calibration of security equipment and systems, and their maintenance while at sea."}, {"q": "Per 33 CFR 104.220(j), what techniques must personnel be familiar with regarding oversight of the vessel?", "options": ["Inspection, control, and monitoring techniques", "Celestial navigation and chartwork techniques", "Cargo lashing and securing techniques", "Firefighting and damage control techniques"], "correct": 0, "exp": "104.220(j) is inspection, control, and monitoring techniques."}, {"q": "Per 33 CFR 104.220(k), what document must security-duty personnel know the relevant provisions of?", "options": ["The Vessel Security Plan (VSP)", "The Vessel's Certificate of Inspection", "The Vessel's Load Line Certificate", "The Vessel's Safety Management Manual only"], "correct": 0, "exp": "104.220(k) is relevant provisions of the Vessel Security Plan (VSP)."}, {"q": "Per 33 CFR 104.220(l), what physical process must personnel know methods for, applied to persons, effects, baggage, cargo, and vessel stores?", "options": ["Methods of physical screening", "Methods of chemical analysis", "Methods of structural fire protection", "Methods of lifeboat davit operation"], "correct": 0, "exp": "104.220(l) is methods of physical screening of persons, personal effects, baggage, cargo, and vessel stores."}, {"q": "Per 33 CFR 104.220(m), what must personnel understand about the different MARSEC Levels?", "options": ["The meaning and the consequential requirements of the different Maritime Security (MARSEC) Levels", "Only the numeric designation of each level, with no further detail", "The meaning of MARSEC Levels only as they apply to foreign-flagged vessels", "The budget allocated to each MARSEC Level by the company"], "correct": 0, "exp": "104.220(m) is the meaning and the consequential requirements of the different MARSEC Levels."}, {"q": "Per 33 CFR 104.220(n), what program-specific knowledge is required of security-duty personnel?", "options": ["Relevant aspects of the TWIC program and how to carry them out", "Relevant aspects of the vessel's payroll system", "Relevant aspects of the vessel's fuel bunkering schedule", "Relevant aspects of the vessel's passenger entertainment program"], "correct": 0, "exp": "104.220(n) is relevant aspects of the TWIC program and how to carry them out."}, {"q": "Which of the following is explicitly required before a person can perform company or vessel security duties under 33 CFR 104.220?", "options": ["They must maintain a TWIC", "They must hold a Master's license", "They must be a U.S. citizen regardless of vessel flag", "They must have at least ten years of sea service"], "correct": 0, "exp": "104.220 states company and vessel personnel responsible for security duties must maintain a TWIC, in addition to the knowledge requirements (a) through (n)."}, {"q": "How does 33 CFR 104.225 (security training for ALL OTHER vessel personnel) differ in scope from 104.220 (personnel WITH security duties)?", "options": ["104.225 applies to all other vessel personnel, including part-time/temporary/permanent contractors, with a shorter list of requirements than the full (a)-(n) list in 104.220", "104.225 and 104.220 contain the exact same 14-item list with no differences", "104.225 only applies to shoreside office staff, never to anyone aboard the vessel", "104.225 requires a TWIC while 104.220 does not"], "correct": 0, "exp": "104.225 covers all other vessel personnel (including contractors of any employment status) and lists a shorter set of requirements (VSP provisions, MARSEC levels, recognition of dangerous substances/suspicious behavior, circumvention techniques, and TWIC awareness) compared to the fuller 104.220(a)-(n) list for those with actual security duties."}, {"q": "What is the precise definition of MARSEC Level 1?", "options": ["The level for which minimum appropriate protective security measures shall be maintained at all times", "The level declared only during a declared national emergency", "The level that applies only to passenger vessels", "The level at which all vessel operations must cease"], "correct": 0, "exp": "MARSEC Level 1 is the level for which minimum appropriate protective security measures shall be maintained at all times \u2014 it is the baseline, constant level."}, {"q": "What is the precise definition of MARSEC Level 2?", "options": ["The level for which appropriate additional protective security measures shall be maintained for a period of time as a result of heightened risk of a transportation security incident", "The level at which the vessel must be evacuated immediately", "The level that applies only during scheduled Coast Guard inspections", "The level reserved exclusively for foreign-flagged vessels"], "correct": 0, "exp": "MARSEC Level 2 is for additional protective measures maintained for a period of time due to heightened risk of a transportation security incident \u2014 not a permanent state, but not yet an imminent/probable threat either."}, {"q": "What is the precise definition of MARSEC Level 3?", "options": ["The level for which further specific protective security measures shall be maintained for a limited period of time when a transportation security incident is probable or imminent, although it may not be possible to identify the specific target", "The level used only for administrative drills with no real threat present", "The level that cancels all prior Declarations of Security automatically", "The level that only the vessel's insurance underwriter can declare"], "correct": 0, "exp": "MARSEC Level 3 applies for a limited period when a TSI is probable or imminent, even if the specific target cannot be identified."}, {"q": "At MARSEC Level 2, what must the Vessel Security Officer do regarding vessel personnel, per the course material?", "options": ["Brief all vessel personnel of identified threats, emphasize reporting procedures, and stress the need for increased vigilance", "Dismiss all non-essential personnel from the vessel entirely", "Suspend all onboard drills and exercises until the level returns to 1", "Transfer all security duties to the Facility Security Officer"], "correct": 0, "exp": "For MARSEC Levels 2 and 3, the VSO must brief all vessel personnel of identified threats, emphasize reporting procedures, and stress the need for increased vigilance."}, {"q": "Which of these is listed as an ADDITIONAL measure a vessel owner/operator may implement specifically at MARSEC Level 3 (beyond Levels 1 and 2)?", "options": ["Use of armed security personnel to control access to the vessel", "Issuing TWICs to all crew for the first time", "Conducting the vessel's annual VSP audit", "Submitting the initial Vessel Security Assessment"], "correct": 0, "exp": "At MARSEC Level 3, additional measures may include arrangements to ensure the vessel can be towed/moved, waterborne security patrol, armed security personnel, and screening for underwater threats \u2014 well beyond Level 1/2 baseline measures."}, {"q": "Within how many hours of notification must a vessel already in port come into compliance with a newly-set higher MARSEC Level?", "options": ["12 hours", "72 hours", "1 hour", "24 hours"], "correct": 0, "exp": "Per 104.240, for vessels in port, compliance with the higher MARSEC Level must be achieved within 12 hours of the notification."}, {"q": "Per 104.215, for a MANNED vessel, who must serve as the Vessel Security Officer (VSO)?", "options": ["The Master or a member of the crew", "Only a shoreside employee of the company", "Only a licensed Chief Mate, never the Master", "Any passenger designated in writing by the Master"], "correct": 0, "exp": "For manned vessels, the VSO must be the Master or a member of the crew."}, {"q": "Per 104.215, for an UNMANNED vessel, who must serve as the VSO, and can one person cover multiple vessels?", "options": ["The VSO must be an employee of the company, and the same person may serve as VSO for more than one unmanned vessel if each is listed in the VSP", "The VSO must be a Coast Guard-designated third party, and may never cover more than one vessel", "There is no VSO requirement for unmanned vessels", "The VSO must be the towing vessel's engineer exclusively"], "correct": 0, "exp": "For unmanned vessels, the VSO must be a company employee, and one person may serve as VSO for multiple unmanned vessels if each vessel's name is listed in that VSP."}, {"q": "If a VSO assigns security duties to other vessel personnel, who remains responsible for those duties?", "options": ["The VSO remains responsible", "The person the duty was assigned to becomes solely responsible", "The Company Security Officer automatically assumes responsibility", "Responsibility transfers to the Coast Guard"], "correct": 0, "exp": "The VSO may assign security duties to other personnel, but the VSO remains responsible for those duties."}, {"q": "Which of the following is explicitly listed as a VSO responsibility?", "options": ["Ensure adequate security training for vessel personnel", "Approve the company's annual financial budget", "Set the vessel's MARSEC Level independently of the Administration", "Issue TWICs directly to all new hires"], "correct": 0, "exp": "VSO responsibilities include regularly inspecting the vessel, maintaining/supervising the VSP, coordinating cargo/stores handling, proposing VSP modifications to the CSO, ensuring training, and ensuring incident reporting, among others."}, {"q": "Per 104.210, may a vessel owner/operator designate a single CSO for all of its vessels?", "options": ["Yes \u2014 a single CSO may be designated for all vessels, or more than one CSO may be designated with vessels clearly divided among them", "No \u2014 exactly one CSO must be designated per vessel with no sharing allowed", "No \u2014 only the Coast Guard may designate a CSO", "Yes, but only for vessels under 500 gross tons"], "correct": 0, "exp": "104.210 allows a vessel owner/operator to designate a single CSO for all vessels to which the part applies, or multiple CSOs with vessels clearly divided among them."}, {"q": "Which of the following is explicitly listed as a CSO responsibility (not a VSO responsibility)?", "options": ["Ensure a Vessel Security Assessment (VSA) is carried out and a Vessel Security Plan (VSP) is developed, approved, and maintained", "Regularly inspect the vessel in person to ensure security measures are maintained day-to-day", "Personally operate security equipment aboard the vessel", "Personally conduct physical screening of embarking passengers"], "correct": 0, "exp": "The CSO's duties are broader/company-level: ensuring the VSA is carried out, the VSP is developed/approved/maintained and modified as needed, audits occur, Coast Guard inspections are arranged, and training/awareness is ensured \u2014 day-to-day inspection and equipment operation are VSO-level tasks."}, {"q": "Per 105.205, may the same person serve as Facility Security Officer (FSO) for more than one facility?", "options": ["Yes, provided the facilities are in the same COTP zone and not more than 50 miles apart", "No, one person may only ever be the FSO for a single facility", "Yes, with no distance or zone restriction whatsoever", "Yes, but only if the facilities are in different COTP zones"], "correct": 0, "exp": "105.205 allows the same person to serve as FSO for multiple facilities only if they are in the same COTP zone and no more than 50 miles apart."}, {"q": "Which of the following is an FSO responsibility NOT shared by the VSO?", "options": ["Ensure the execution of any required Declarations of Security with Masters, Vessel Security Officers, or their designated representatives", "Ensure adequate training to personnel performing facility security duties", "Ensure security equipment is properly operated, tested, calibrated, and maintained", "Maintain a TWIC"], "correct": 0, "exp": "Executing the DoS with Masters/VSOs on behalf of the facility is an FSO-specific duty listed in 105.205 \u2014 the other listed items (training, equipment maintenance, TWIC) are shared obligations across VSO/CSO/FSO roles."}, {"q": "Per 104.265(c), what three things must a TWIC inspection confirm before granting unescorted access?", "options": ["A photo match to the individual, that the TWIC has not expired, and a visual check for tampering/forgery", "Only that the card exists and is not visibly damaged", "Only the cardholder's employer name", "Only the cardholder's vessel assignment"], "correct": 0, "exp": "TWIC inspection must include a match of the photo to the individual, verification the TWIC has not expired, and a visual check of security features to detect tampering or forgery."}, {"q": "If an individual's TWIC is lost, damaged, or stolen, for how many consecutive calendar days may they still be granted unescorted access under specified conditions?", "options": ["No longer than seven consecutive calendar days", "30 consecutive calendar days", "90 consecutive calendar days", "They may never be granted unescorted access again until a new TWIC is issued"], "correct": 0, "exp": "If previously granted unescorted access with a known valid TWIC, an individual may be given unescorted access for up to seven consecutive calendar days after reporting the TWIC lost/damaged/stolen to TSA, provided other conditions are met."}, {"q": "Per 104.265, what must happen to an individual who cannot present a TWIC and does not qualify for the seven-day exception?", "options": ["They may not be granted unescorted access and must be under escort at all times inside a secure area", "They must be granted access anyway if they can state their name verbally", "They must be denied boarding of the vessel entirely under all circumstances", "They must be issued a temporary TWIC by the vessel's Master on the spot"], "correct": 0, "exp": "An individual who cannot present a TWIC for any reason outside the lost/damaged/stolen exception may not be granted unescorted access, and must be under escort at all times in a secure area."}, {"q": "What does 'escorting' require, per the course material's definition?", "options": ["Ensuring the escorted individual is continuously accompanied within a secure area in a manner sufficient to observe their activities", "Simply logging the individual's name at the gangway with no further supervision", "Allowing the individual to move freely as long as they carry a visitor badge", "Requiring the individual to remain in a single room for the duration of their visit"], "correct": 0, "exp": "Escorting means continuously accompanying the individual within a secure area sufficiently to observe whether they engage in activities other than those for which access was granted."}, {"q": "At MARSEC Level 1, what must be conspicuously posted regarding screening, per 104.265?", "options": ["Signs stating that boarding the vessel is deemed valid consent to screening, and that failure to consent results in denial or revocation of authorization to board", "Signs listing the names of all crew members with a TWIC", "Signs displaying the vessel's cargo manifest", "Signs listing the ship's insurance policy number"], "correct": 0, "exp": "104.265(a)(3) requires conspicuously posted signs stating that boarding is valid consent to screening/inspection, and failure to consent results in denial or revocation of boarding authorization."}, {"q": "At MARSEC Level 1, which documents may be examined to confirm a non-TWIC holder's reason for boarding?", "options": ["Joining instructions, passenger tickets, boarding passes, work/pilot/surveyor orders, government ID, or an issued visitor badge", "Only a \u0433\u043e\u0441\u0443\u0434\u0430\u0440\u0441\u0442\u0432\u043e-issued passport, with no other document accepted", "Only a company paycheck stub", "Only a handwritten note from the individual's supervisor"], "correct": 0, "exp": "104.265(a)(4) lists joining instructions, passenger tickets, boarding passes, work orders/pilot orders/surveyor orders, government identification, or visitor badges as acceptable documents to confirm reason for boarding."}, {"q": "Per 104.265, at MARSEC Level 2, what ADDITIONAL screening-related measure may be implemented beyond MARSEC Level 1?", "options": ["X-ray screening of all unaccompanied baggage", "Elimination of all TWIC checks to speed up boarding", "Suspension of the Vessel Security Plan entirely", "Permanent closure of the vessel to all visitors"], "correct": 0, "exp": "At MARSEC Level 2, additional measures may include X-ray screening of all unaccompanied baggage, increased frequency/detail of screening, additional deck patrols, limiting access points, and deterring waterside access."}, {"q": "At MARSEC Level 1, which vessels are specifically required to complete and sign a DoS with an interfacing vessel or facility?", "options": ["Any cruise ship or manned vessel carrying Certain Dangerous Cargoes in bulk", "Every vessel of any type or cargo, with no exceptions", "Only unmanned barges", "Only vessels under 500 gross tons"], "correct": 0, "exp": "At MARSEC Level 1, the Master or VSO of any cruise ship or manned vessel carrying Certain Dangerous Cargoes in bulk must complete and sign a DoS with the interfacing vessel's or facility's VSO/FSO."}, {"q": "How many of the most recent Declarations of Security must manned vessels keep copies of on board?", "options": ["The last 10 DoS", "The last 100 DoS", "Only the single most recent DoS", "DoS records need not be kept aboard the vessel at all"], "correct": 0, "exp": "Manned vessels must maintain copies of the last 10 Declarations of Security, plus a copy of each continuing DoS for at least 90 days after its effective period ends."}, {"q": "What is the maximum effective period for a continuing DoS at MARSEC Level 1?", "options": ["90 days", "30 days", "7 days", "365 days"], "correct": 0, "exp": "A continuing DoS used for multiple visits to the same facility may have an effective period of up to 90 days at MARSEC Level 1."}, {"q": "What is the maximum effective period for a continuing DoS at MARSEC Level 2?", "options": ["30 days", "90 days", "7 days", "180 days"], "correct": 0, "exp": "A continuing DoS at MARSEC Level 2 may not exceed 30 days, reflecting the heightened-risk nature of that level compared to Level 1's 90-day allowance."}, {"q": "What happens to a continuing DoS if the MARSEC Level increases beyond the level it was written for?", "options": ["It becomes void, and a new DoS must be signed and implemented", "It remains valid automatically until its original expiration date", "It is automatically upgraded without requiring a new signature", "Nothing changes; continuing DoS documents are level-independent"], "correct": 0, "exp": "When the MARSEC Level increases beyond what's contained in the continuing DoS, that DoS becomes void and a new one must be signed and implemented."}, {"q": "Who may require a manned vessel to implement a DoS at any MARSEC Level, at any time, if deemed necessary?", "options": ["The COTP (Captain of the Port)", "Only the vessel's insurance company", "Only the vessel's flag-state consulate", "Only a labor union representative"], "correct": 0, "exp": "The COTP may require, at any time and at any MARSEC Level, that a manned vessel implement a DoS with a VSO or FSO prior to a vessel-to-vessel activity or vessel-to-facility interface."}, {"q": "Per 104.230, how frequently must security drills be conducted to ensure effective implementation of the VSP?", "options": ["At least once every three months", "At least once every month", "At least once every six months", "Only once per calendar year"], "correct": 0, "exp": "Security drills must be conducted at least once every three months to ensure effective implementation of VSP provisions."}, {"q": "If more than 25% of a vessel's personnel are changed at one time with people who haven't drilled aboard that vessel in the last three months, within what timeframe must a drill be conducted?", "options": ["Within one week of the change", "Within 24 hours of the change", "Within 90 days of the change", "No special drill is required in this situation"], "correct": 0, "exp": "If more than 25% of vessel personnel are replaced with people who haven't participated in a drill on that vessel within the last three months, a drill must be conducted within one week."}, {"q": "How often must security exercises (as distinct from drills) be carried out, and what is the maximum gap allowed between them?", "options": ["At least once each calendar year, with no more than 18 months between exercises", "At least once every three months, same as drills", "At least once every five years", "Exercises are optional and have no minimum frequency"], "correct": 0, "exp": "Exercises must be carried out at least once each calendar year, with no more than 18 months between exercises \u2014 testing communications, coordination, resource availability, and response."}, {"q": "Which of the following may count as a valid type of security exercise, per the course material?", "options": ["A full-scale/live exercise, a tabletop simulation or seminar, or one combined with another exercise like SAR or emergency response", "Only a full-scale, live-action exercise qualifies; tabletop exercises are not accepted", "Only an exercise conducted solely by shoreside office personnel with no vessel crew involvement", "Only an exercise lasting a minimum of 72 continuous hours"], "correct": 0, "exp": "Valid exercise types include full-scale/live exercises, tabletop simulation or seminar exercises, or exercises combined with other events such as SAR or emergency response exercises."}, {"q": "For how long must the VSO generally keep required security records, and make them available to the Coast Guard upon request?", "options": ["At least 2 years", "At least 6 months", "At least 10 years", "Indefinitely, with no minimum or stated retention period"], "correct": 0, "exp": "Per 104.235, the VSO must keep records of specified activities for at least 2 years and make them available to the Coast Guard upon request."}, {"q": "Which of the following is explicitly listed as a required VSO recordkeeping category under 104.235?", "options": ["Drills and exercises \u2014 including date held, description, participants, and lessons learned", "Daily fuel consumption logs", "Passenger meal preferences", "Crew member's personal banking information"], "correct": 0, "exp": "104.235 lists required records including training, drills and exercises, incidents and breaches of security, MARSEC Level changes, security equipment maintenance/testing, security threats, DoS copies, and the annual VSP audit letter."}, {"q": "How must the CSO or VSO ensure the Vessel Security Plan stays current, per 104.415?", "options": ["Ensure an audit of the VSP is performed annually, beginning no later than one year from the initial approval date", "The VSP never requires any audit once initially approved", "Only the Coast Guard may audit the VSP, never the CSO or VSO", "The VSP must be entirely rewritten every five years regardless of changes"], "correct": 0, "exp": "104.415 requires the CSO or VSO to ensure an annual VSP audit, beginning no later than one year from initial approval, with a certifying letter attached \u2014 and additional audits if ownership, operator, or significant vessel modifications occur."}, {"q": "Per 101.305, what must an owner/operator do upon becoming aware of activities that may result in a Transportation Security Incident (TSI)?", "options": ["Report, without delay, to the National Response Center", "Wait 24 hours to confirm the threat before reporting", "Report only to the vessel's insurance underwriter", "Report only if the activity has already caused physical damage"], "correct": 0, "exp": "101.305 requires owners/operators to report, without delay, activities that may result in a TSI to the National Response Center."}, {"q": "Per 101.305, besides reporting to the National Response Center, what must an owner/operator do upon an ACTUAL transportation security incident (TSI)?", "options": ["Report it without delay to their local COTP and begin following their security plan's procedures", "Only notify their company's public relations department", "Wait for the Coast Guard to independently discover the incident", "File a report only after the vessel returns to its home port"], "correct": 0, "exp": "For an actual TSI (not just activities that might lead to one), the owner/operator must report without delay to the local COTP and immediately begin following the procedures in their security plan."}, {"q": "What information should callers to the National Response Center be prepared to provide?", "options": ["Their name/contact info, the name/contact info of the suspicious party, the incident location, and a description of the incident", "Only their vessel's IMO number", "Only the dollar value of the cargo aboard", "Nothing \u2014 the call can be made anonymously with no details given"], "correct": 0, "exp": "Callers should provide their own name and contact info, the suspicious/responsible party's name and contact info, the incident's location, and a description of the incident or activity."}, {"q": "What is the precise definition of a 'Breach of security,' per the course glossary?", "options": ["An incident that has NOT resulted in a transportation security incident, in which security measures have been circumvented, eluded, or violated", "Any incident resulting in significant loss of life or major economic disruption", "Any successful attack that results in the vessel sinking", "A minor paperwork error in the Vessel Security Plan"], "correct": 0, "exp": "A 'Breach of security' is specifically defined as an incident that has NOT risen to the level of a TSI, where security measures were circumvented, eluded, or violated \u2014 this is the key distinction from a TSI."}, {"q": "What is the precise definition of a 'Transportation security incident' (TSI)?", "options": ["A security incident resulting in a significant loss of life, environmental damage, transportation system disruption, or economic disruption in a particular area", "Any incident, however minor, involving a TWIC violation", "Any incident involving more than one vessel", "An incident that occurs exclusively within U.S. territorial waters"], "correct": 0, "exp": "A TSI is defined as a security incident resulting in significant loss of life, environmental damage, transportation system disruption, or economic disruption in a particular area \u2014 a higher threshold than a mere breach of security."}, {"q": "What is the definition of 'Secure area,' and what does it specifically EXCLUDE?", "options": ["The area where access control security measures are implemented under an approved plan; it excludes passenger access areas, employee access areas, and public access areas", "Any area of the vessel with a locked door, regardless of the VSP", "The entire vessel without exception", "Only the bridge and nothing else"], "correct": 0, "exp": "A 'Secure area' is where the owner/operator has implemented access control security measures per an approved plan; it specifically excludes passenger access areas, employee access areas, and public access areas as separately defined."}, {"q": "What is the definition of a 'Security sweep,' per the course glossary?", "options": ["A walkthrough to visually inspect unrestricted areas for unattended packages/luggage and confirm restricted areas are secure", "A full physical audit of the Vessel Security Plan's paperwork", "An electronic scan of the vessel's entire IT network", "A background check performed on all crew members before sailing"], "correct": 0, "exp": "A 'Security sweep' means a walkthrough to visually inspect unrestricted areas to identify unattended packages, briefcases, or luggage, and to determine that restricted areas are secure."}, {"q": "What is the definition of 'Screening,' per the course glossary?", "options": ["A reasonable examination of persons, cargo, vehicles, or baggage for the protection of the vessel, its passengers, and crew", "A background check conducted only on prospective employees before hiring", "The process of reviewing a vessel's insurance policy for compliance", "A test administered to crew members before they receive a TWIC"], "correct": 0, "exp": "'Screening' is defined as a reasonable examination of persons, cargo, vehicles, or baggage, for the protection of the vessel, its passengers, and crew."}, {"q": "What is the definition of 'Unescorted access,' per the course glossary?", "options": ["Having the authority to enter and move about a secure area without escort", "Having a TWIC that has expired within the last 30 days", "Being permitted to enter only the vessel's public access areas", "Being accompanied at all times by a side-by-side companion"], "correct": 0, "exp": "'Unescorted access' means having the authority to enter and move about a secure area without an escort \u2014 the opposite of what 'escorting' provides for those without a valid TWIC."}, {"q": "What is the definition of 'Vessel-to-vessel activity,' per the course glossary?", "options": ["Any activity NOT related to a facility or port that involves the transfer of cargo, vessel stores, or persons from one vessel to another", "Any activity between a vessel and a shoreside facility", "Any activity between a vessel and a government agency", "Any activity involving only a single vessel with no interface at all"], "correct": 0, "exp": "'Vessel-to-vessel activity' specifically means an activity NOT related to a facility or port, involving the transfer of cargo, stores, or persons between two vessels."}, {"q": "What does the Coast Guard definition of 'Company' (33 CFR Subchapter H) actually cover?", "options": ["Any person or entity that owns, or has assumed operational responsibility for, any facility, vessel, or OCS facility subject to the subchapter's requirements", "Only a publicly traded corporation that owns ten or more vessels", "Only the vessel's flag-state government", "Only a classification society such as ABS or Lloyd's Register"], "correct": 0, "exp": "'Company' means any person or entity that owns, or has assumed the responsibility for operation of, any facility, vessel, or OCS facility subject to the subchapter's requirements, including its duties and responsibilities."}, {"q": "What historic event does the course identify as a key catalyst for the 1988 SUA Convention?", "options": ["The broader rise of maritime terrorism and hijackings in the 1980s (the course specifically discusses the Achille Lauro hijacking of 1985)", "The sinking of the Titanic in 1912", "The Exxon Valdez oil spill of 1989", "The September 11, 2001 attacks"], "correct": 0, "exp": "The course's historical perspective lists the Achille Lauro hijacking (1985) among the notable incidents motivating the international security framework that led to SUA (1988) and later the ISPS Code (2002)."}, {"q": "What does ISPS stand for?", "options": ["International Ship and Port Facility Security Code", "International Shipping and Port Security Code", "Inspection of Ship and Port Safety Code", "International Safety and Pollution Standards Code"], "correct": 0, "exp": "ISPS stands for the International Ship and Port Facility Security Code."}, {"q": "Which Part of the ISPS Code is mandatory, and which contains guidance only?", "options": ["Part A is mandatory; Part B contains guidance on how best to comply", "Part B is mandatory; Part A contains guidance only", "Both Parts A and B are mandatory with no guidance-only section", "Neither Part A nor B is mandatory; compliance is fully voluntary"], "correct": 0, "exp": "Part A of the ISPS Code is mandatory, while Part B contains guidance as to how best to comply with the mandatory requirements."}, {"q": "What U.S. legislation made Part B of the ISPS Code mandatory and extended the Code to all vessels in U.S. waters regardless of size, route, or trade?", "options": ["The Maritime Transportation Security Act (MTSA) of 2002", "The Oil Pollution Act (OPA) of 1990", "The Ports and Waterways Safety Act of 1972", "The SAFE Port Act alone, with no role for MTSA"], "correct": 0, "exp": "MTSA 2002 made Part B of the ISPS Code mandatory domestically and extended the Code's requirements to all vessels in U.S. waters, regardless of size, route, or trade."}, {"q": "What does SOLAS Regulation XI-2/8 confirm about the Master's authority?", "options": ["The Master's professional judgment over decisions necessary to maintain ship security shall not be constrained by the Company, charterer, or any other person", "The Master must obtain company approval before making any security decision", "The Master's authority over security is subordinate to the CSO at all times", "The Master may only act on security matters while the vessel is in port"], "correct": 0, "exp": "Regulation XI-2/8 confirms the Master's professional judgment on security decisions is not to be constrained by the Company, the charterer, or any other person."}, {"q": "Per SOLAS Regulation XI-2/6, from which locations must a ship's Security Alert System be capable of activation, and does it raise an alarm aboard the vessel?", "options": ["From the navigation bridge and at least one other location; it does NOT raise any alarm aboard the ship", "From the engine room only; it sounds a loud alarm throughout the vessel", "From the galley only; it alerts nearby vessels by flashing lights", "From any crew cabin; it automatically contacts the vessel's insurance company"], "correct": 0, "exp": "The Ship Security Alert System must be capable of activation from the bridge and at least one other location, and critically, it transmits silently \u2014 the system does NOT raise any alarm aboard the ship itself, to avoid tipping off an attacker."}, {"q": "Per the UN Convention on the Law of the Sea (Article 101), where must piracy, by definition, occur?", "options": ["On the high seas, or in a place outside the jurisdiction of any State", "Exclusively within a nation's territorial waters", "Exclusively within a designated port facility", "Only aboard vessels flying the flag of a Contracting Government"], "correct": 0, "exp": "UNCLOS Article 101 defines piracy as acts of violence/detention/depredation committed for private ends, directed on the high seas against another vessel, or against persons/property outside the jurisdiction of any State \u2014 a key distinction from armed robbery, which occurs within territorial waters/ports."}]      // shuffled question objects for current run
+let idx = 0;
+let score = 0;
+let answered = false;
+let userAnswers = [];  // {qIndexInSession, chosen, correct}
+
+const screenSelect = document.getElementById('screen-select');
+const screenQuiz = document.getElementById('screen-quiz');
+const screenResults = document.getElementById('screen-results');
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function startSession(count){
+  const pool = shuffle(QUESTIONS);
+  session = count === 'all' ? pool : pool.slice(0, count);
+  idx = 0; score = 0; answered = false; userAnswers = [];
+  screenSelect.classList.add('hidden');
+  screenResults.classList.add('hidden');
+  screenQuiz.classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answered = false;
+  const item = session[idx];
+  document.getElementById('progressLabel').textContent = (idx+1) + ' / ' + session.length;
+  document.getElementById('progressFill').style.width = ((idx)/session.length*100) + '%';
+  document.getElementById('qText').textContent = item.q;
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('nextBtn').textContent = (idx === session.length-1) ? 'See Results' : 'Next';
+
+  const explainBox = document.getElementById('explainBox');
+  explainBox.classList.remove('show');
+  explainBox.innerHTML = '';
+
+  const optList = document.getElementById('optList');
+  optList.innerHTML = '';
+  const letters = ['A','B','C','D'];
+
+  const optOrder = shuffle(item.options.map((text, origIdx) => ({text, origIdx})));
+
+  optOrder.forEach((opt, displayIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = '<span class="opt-letter">'+letters[displayIdx]+'</span><span>'+opt.text+'</span>';
+    btn.addEventListener('click', () => selectOption(opt.origIdx, btn, optList, item));
+    optList.appendChild(btn);
+  });
+}
+
+function selectOption(chosenOrigIdx, btnEl, optList, item){
+  if(answered) return;
+  answered = true;
+  const isCorrect = chosenOrigIdx === item.correct;
+  if(isCorrect) score++;
+
+  userAnswers.push({
+    q: item.q,
+    options: item.options,
+    correct: item.correct,
+    chosen: chosenOrigIdx,
+    isCorrect: isCorrect,
+    exp: item.exp
+  });
+
+  Array.from(optList.children).forEach(child => {
+    child.disabled = true;
+  });
+
+  // mark all buttons based on their origIdx stored via matching text
+  Array.from(optList.children).forEach(child => {
+    const text = child.querySelector('span:last-child').textContent;
+    const thisOrigIdx = item.options.indexOf(text);
+    if(thisOrigIdx === item.correct){
+      child.classList.add('correct');
+    } else if(thisOrigIdx === chosenOrigIdx){
+      child.classList.add('incorrect');
+    } else {
+      child.classList.add('dim');
+    }
+  });
+
+  const explainBox = document.getElementById('explainBox');
+  explainBox.innerHTML = '<b>' + (isCorrect ? 'Correct. ' : 'Not quite. ') + '</b>' + item.exp;
+  explainBox.classList.add('show');
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  idx++;
+  if(idx >= session.length){
+    showResults();
+  } else {
+    renderQuestion();
+  }
+});
+
+function showResults(){
+  document.getElementById('progressFill').style.width = '100%';
+  screenQuiz.classList.add('hidden');
+  screenResults.classList.remove('hidden');
+
+  document.getElementById('scoreNum').innerHTML = score + '<span>/' + session.length + '</span>';
+  const pct = Math.round((score/session.length)*100);
+  let msg;
+  if(pct === 100) msg = "Perfect run. You know this material cold.";
+  else if(pct >= 85) msg = "Strong result — review the misses below, then you're set.";
+  else if(pct >= 70) msg = "Solid, but a few gaps to close before the exam.";
+  else msg = "Worth another pass through the guide — review the misses below.";
+  document.getElementById('scoreMsg').textContent = pct + '% — ' + msg;
+
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = '';
+  const misses = userAnswers.filter(a => !a.isCorrect);
+  if(misses.length === 0){
+    reviewList.innerHTML = '<p style="text-align:center;color:#555;font-size:14px;">No misses to review — nice work.</p>';
+  } else {
+    const heading = document.createElement('p');
+    heading.style.cssText = 'font-family:"Oswald","Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:0.05em;font-size:13px;color:#7c7460;margin-bottom:8px;';
+    heading.textContent = 'Review — ' + misses.length + ' missed';
+    reviewList.appendChild(heading);
+    misses.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'review-item';
+      div.innerHTML =
+        '<span class="review-tag tag-wrong">Missed</span>' +
+        '<p class="review-q">' + m.q + '</p>' +
+        '<p class="review-answer">Your answer: ' + m.options[m.chosen] + '</p>' +
+        '<p class="review-answer">Correct answer: ' + m.options[m.correct] + '</p>' +
+        '<p class="review-exp">' + m.exp + '</p>';
+      reviewList.appendChild(div);
+    });
+  }
+}
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const c = btn.getAttribute('data-count');
+    startSession(c === 'all' ? 'all' : parseInt(c,10));
+  });
+});
+
+document.getElementById('retakeBtn').addEventListener('click', () => {
+  startSession(session.length === QUESTIONS.length ? 'all' : session.length);
+});
+document.getElementById('menuBtn').addEventListener('click', () => {
+  screenResults.classList.add('hidden');
+  screenSelect.classList.remove('hidden');
+});
+
+document.getElementById('bankSizeLabel').textContent = QUESTIONS.length;
+document.getElementById('allCountBtn').textContent = QUESTIONS.length;
+</script>
+</body>
+</html>
